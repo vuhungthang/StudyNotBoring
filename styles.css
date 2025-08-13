@@ -27,7 +27,7 @@ h1 {
     color: #444;
 }
 
-.api-key-section, .note-form-section, .ai-section, .notes-section {
+.notebook-section, .api-key-section, .note-form-section, .ai-section, .notes-section {
     background: #fff;
     padding: 20px;
     margin-bottom: 20px;
@@ -35,12 +35,76 @@ h1 {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-#api-key-form input, #note-form input, #note-form textarea, #ai-form input {
+.notebook-controls {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.notebook-controls input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.notebook-controls button {
+    background-color: #5bc0de;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.notebook-controls button:hover {
+    background-color: #46b8da;
+}
+
+.notebook {
+    background: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-left: 5px solid #5bc0de;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notebook h3 {
+    margin: 0;
+    color: #444;
+}
+
+.notebook button {
+    background-color: #d9534f;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.notebook button:hover {
+    background-color: #c9302c;
+}
+
+#api-key-form input, #note-form input, #note-form textarea, #ai-form input, select {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
+}
+
+#note-form select, #ai-form select, #filter-notebook-select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
 }
 
 #api-key-form button, #note-form button, #ai-form button {
@@ -87,7 +151,13 @@ h1 {
     color: #444;
 }
 
-.note p {
+.note-content {
+    margin-bottom: 10px;
+}
+
+.note-meta {
+    font-size: 0.9em;
+    color: #777;
     margin-bottom: 10px;
 }
 
@@ -109,4 +179,60 @@ h1 {
     padding: 10px;
     color: #5cb85c;
     font-style: italic;
+}
+
+/* AI Content Styling */
+.ai-content h1, .ai-content h2, .ai-content h3 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.ai-content h1 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.ai-content h2 {
+    font-size: 1.3em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.ai-content h3 {
+    font-size: 1.1em;
+}
+
+.ai-content p {
+    margin-bottom: 10px;
+}
+
+.ai-content ul, .ai-content ol {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+.ai-content li {
+    margin-bottom: 5px;
+}
+
+.ai-content code {
+    background-color: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.ai-content pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
+
+.ai-content pre code {
+    background-color: transparent;
+    padding: 0;
 }

@@ -12,6 +12,14 @@
             <h1>My Learning Notebook</h1>
         </header>
         <main>
+            <section class="notebook-section">
+                <h2>Notebooks</h2>
+                <div class="notebook-controls">
+                    <input type="text" id="new-notebook-name" placeholder="New notebook name" required>
+                    <button id="create-notebook-btn">Create Notebook</button>
+                </div>
+                <div id="notebooks-container"></div>
+            </section>
             <section class="api-key-section" id="api-key-section">
                 <h2>OpenRouter API Key</h2>
                 <form id="api-key-form">
@@ -23,6 +31,9 @@
             <section class="note-form-section">
                 <h2>Add New Note</h2>
                 <form id="note-form">
+                    <select id="notebook-select" required>
+                        <option value="">Select a notebook</option>
+                    </select>
                     <input type="text" id="note-title" placeholder="Note Title" required>
                     <textarea id="note-content" placeholder="Note Content" required></textarea>
                     <button type="submit">Add Note</button>
@@ -31,6 +42,9 @@
             <section class="ai-section">
                 <h2>Generate Note with AI</h2>
                 <form id="ai-form">
+                    <select id="ai-notebook-select" required>
+                        <option value="">Select a notebook</option>
+                    </select>
                     <input type="text" id="ai-prompt" placeholder="Enter a topic or question" required>
                     <button type="submit" id="ai-submit-btn">Generate Note</button>
                     <div id="ai-loading" class="loading" style="display: none;">Generating...</div>
@@ -38,6 +52,9 @@
             </section>
             <section class="notes-section">
                 <h2>Your Notes</h2>
+                <select id="filter-notebook-select">
+                    <option value="">All Notebooks</option>
+                </select>
                 <div id="notes-container"></div>
             </section>
         </main>

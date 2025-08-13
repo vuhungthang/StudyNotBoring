@@ -1,40 +1,150 @@
 // script.js
 
+// Data structure for notebooks and notes
+let notebooks = JSON.parse(localStorage.getItem('notebooks')) || {};
+let currentNotebook = null;
+
+// Function to save notebooks to local storage
+function saveNotebooksToLocalStorage() {
+    localStorage.setItem('notebooks', JSON.stringify(notebooks));
+}
+
+// Function to create a new notebook
+function createNotebook(name) {
+    if (name && !notebooks[name]) {
+        notebooks[name] = [];
+        saveNotebooksToLocalStorage();
+        renderNotebooks();
+        updateNotebookSelects();
+        return true;
+    }
+    return false;
+}
+
+// Function to delete a notebook
+function deleteNotebook(name) {
+    if (notebooks[name]) {
+        delete notebooks[name];
+        saveNotebooksToLocalStorage();
+        renderNotebooks();
+        updateNotebookSelects();
+        renderNotes();
+        return true;
+    }
+    return false;
+}
+
 // Function to add a new note
-function addNote(title, content) {
-    const notesContainer = document.getElementById('notes-container');
-    const noteElement = document.createElement('div');
-    noteElement.classList.add('note');
-    noteElement.innerHTML = `
-        <h3>${title}</h3>
-        <p>${content}</p>
-        <button onclick="deleteNote(this)">Delete</button>
-    `;
-    notesContainer.appendChild(noteElement);
-    saveNotesToLocalStorage();
+function addNote(notebookName, title, content) {
+    if (!notebooks[notebookName]) {
+        notebooks[notebookName] = [];
+    }
+    
+    const note = {
+        id: Date.now(),
+        title: title,
+        content: content,
+        timestamp: new Date().toLocaleString()
+    };
+    
+    notebooks[notebookName].push(note);
+    saveNotebooksToLocalStorage();
+    renderNotes();
 }
 
 // Function to delete a note
-function deleteNote(button) {
-    const noteElement = button.parentElement;
-    noteElement.remove();
-    saveNotesToLocalStorage();
-}
-
-// Function to save notes to local storage
-function saveNotesToLocalStorage() {
-    const notesContainer = document.getElementById('notes-container');
-    const notes = notesContainer.innerHTML;
-    localStorage.setItem('notes', notes);
-}
-
-// Function to load notes from local storage
-function loadNotesFromLocalStorage() {
-    const notesContainer = document.getElementById('notes-container');
-    const notes = localStorage.getItem('notes');
-    if (notes) {
-        notesContainer.innerHTML = notes;
+function deleteNote(notebookName, noteId) {
+    if (notebooks[notebookName]) {
+        notebooks[notebookName] = notebooks[notebookName].filter(note => note.id !== noteId);
+        saveNotebooksToLocalStorage();
+        renderNotes();
     }
+}
+
+// Function to render notebooks
+function renderNotebooks() {
+    const notebooksContainer = document.getElementById('notebooks-container');
+    notebooksContainer.innerHTML = '';
+    
+    for (const notebookName in notebooks) {
+        const notebookElement = document.createElement('div');
+        notebookElement.classList.add('notebook');
+        notebookElement.innerHTML = `
+            <h3>${notebookName}</h3>
+            <button onclick=\"deleteNotebook('${notebookName}')\">Delete</button>
+        `;
+        notebooksContainer.appendChild(notebookElement);
+    }
+}
+
+// Function to update notebook selects
+function updateNotebookSelects() {
+    const selects = [
+        document.getElementById('notebook-select'),
+        document.getElementById('ai-notebook-select'),
+        document.getElementById('filter-notebook-select')
+    ];
+    
+    selects.forEach(select => {
+        // Clear existing options except the first one
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+        
+        // Add notebook options
+        for (const notebookName in notebooks) {
+            const option = document.createElement('option');
+            option.value = notebookName;
+            option.textContent = notebookName;
+            select.appendChild(option);
+        }
+    });
+}
+
+// Function to render notes
+function renderNotes() {
+    const notesContainer = document.getElementById('notes-container');
+    const filterSelect = document.getElementById('filter-notebook-select');
+    const selectedNotebook = filterSelect.value;
+    
+    notesContainer.innerHTML = '';
+    
+    let notesToDisplay = [];
+    
+    if (selectedNotebook) {
+        // Display notes from selected notebook only
+        notesToDisplay = notebooks[selectedNotebook] || [];
+    } else {
+        // Display all notes
+        for (const notebookName in notebooks) {
+            notesToDisplay = notesToDisplay.concat(notebooks[notebookName]);
+        }
+    }
+    
+    // Sort notes by timestamp (newest first)
+    notesToDisplay.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    notesToDisplay.forEach(note => {
+        const noteElement = document.createElement('div');
+        noteElement.classList.add('note');
+        noteElement.innerHTML = `
+            <h3>${note.title}</h3>
+            <div class=\"note-meta\">Created: ${note.timestamp}</div>
+            <div class=\"note-content\">${note.content}</div>
+            <button onclick=\"deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})\">Delete</button>
+        `;
+        notesContainer.appendChild(noteElement);
+    });
+}
+
+// Helper function to find which notebook a note belongs to
+function getNotebookForNote(noteId) {
+    for (const notebookName in notebooks) {
+        if (notebooks[notebookName].some(note => note.id === noteId)) {
+            return notebookName;
+        }
+    }
+    return null;
 }
 
 // Function to save API key to local storage
@@ -59,6 +169,53 @@ function showApiKeyForm() {
     apiKeySection.style.display = 'block';
 }
 
+// Function to format AI-generated content
+function formatAIContent(content) {
+    // Convert markdown-style headers to HTML headers
+    let formattedContent = content
+        .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+        // Convert markdown-style bold and italic
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Convert markdown-style code blocks
+        .replace(/```([\\s\\S]*?)```/g, '<pre><code>$1</code></pre>')
+        // Convert inline code
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        // Convert markdown-style lists
+        .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
+        .replace(/<li>(.*$)/g, '<ol><li>$1</li></ol>')
+        .replace(/^\* (.*$)/gm, '<li>$1</li>')
+        .replace(/<li>(.*$)/g, '<ul><li>$1</li></ul>')
+        // Convert line breaks to paragraphs
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^(.*)$/gm, '<p>$1</p>');
+    
+    // Fix nested lists
+    formattedContent = formattedContent
+        .replace(/<\/ol><ol>/g, '')
+        .replace(/<\/ul><ul>/g, '');
+    
+    // Wrap content in a div for styling
+    return `<div class=\"ai-content\">${formattedContent}</div>`;
+}
+
+// Event listener for creating a new notebook
+document.getElementById('create-notebook-btn').addEventListener('click', function() {
+    const notebookNameInput = document.getElementById('new-notebook-name');
+    const notebookName = notebookNameInput.value.trim();
+    
+    if (notebookName && createNotebook(notebookName)) {
+        notebookNameInput.value = '';
+        alert(`Notebook \"${notebookName}\" created successfully!`);
+    } else if (!notebookName) {
+        alert('Please enter a notebook name.');
+    } else {
+        alert('A notebook with this name already exists.');
+    }
+});
+
 // Event listener for API key form submission
 document.getElementById('api-key-form').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -82,17 +239,32 @@ document.getElementById('hide-api-key-form').addEventListener('click', function(
 // Event listener for note form submission
 document.getElementById('note-form').addEventListener('submit', function(e) {
     e.preventDefault();
+    const notebookSelect = document.getElementById('notebook-select');
+    const notebookName = notebookSelect.value;
     const title = document.getElementById('note-title').value;
     const content = document.getElementById('note-content').value;
-    addNote(title, content);
+    
+    if (!notebookName) {
+        alert('Please select a notebook.');
+        return;
+    }
+    
+    addNote(notebookName, title, content);
     document.getElementById('note-form').reset();
 });
 
 // Event listener for AI form submission
 document.getElementById('ai-form').addEventListener('submit', async function(e) {
     e.preventDefault();
+    const notebookSelect = document.getElementById('ai-notebook-select');
+    const notebookName = notebookSelect.value;
     const prompt = document.getElementById('ai-prompt').value;
     const apiKey = loadApiKeyFromLocalStorage();
+    
+    if (!notebookName) {
+        alert('Please select a notebook.');
+        return;
+    }
     
     if (!apiKey) {
         alert('Please enter your OpenRouter API key first.');
@@ -106,7 +278,8 @@ document.getElementById('ai-form').addEventListener('submit', async function(e) 
     
     try {
         const aiNote = await generateNoteWithAI(prompt, apiKey);
-        addNote('AI Generated Note', aiNote);
+        const formattedContent = formatAIContent(aiNote);
+        addNote(notebookName, `AI: ${prompt}`, formattedContent);
     } catch (error) {
         console.error('Error generating note with AI:', error);
         alert(`Failed to generate note with AI: ${error.message}`);
@@ -119,9 +292,15 @@ document.getElementById('ai-form').addEventListener('submit', async function(e) 
     document.getElementById('ai-form').reset();
 });
 
-// Load notes and API key when the page loads
+// Event listener for filter notebook select
+document.getElementById('filter-notebook-select').addEventListener('change', renderNotes);
+
+// Load notebooks and API key when the page loads
 window.addEventListener('DOMContentLoaded', function() {
-    loadNotesFromLocalStorage();
+    renderNotebooks();
+    updateNotebookSelects();
+    renderNotes();
+    
     const savedApiKey = loadApiKeyFromLocalStorage();
     if (savedApiKey) {
         hideApiKeyForm();
