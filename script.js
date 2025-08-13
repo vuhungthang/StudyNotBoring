@@ -1,4 +1,5 @@
 // script.js
+import InfographicGenerator from './infographicGenerator.js';
 
 // Data structure for notebooks and notes
 let notebooks = JSON.parse(localStorage.getItem('notebooks')) || {};
@@ -6,6 +7,9 @@ let currentNotebook = null;
 
 // Default AI model
 let selectedModel = localStorage.getItem('selectedModel') || 'openrouter/auto';
+
+// Infographic generator instance
+let infographicGenerator = new InfographicGenerator();
 
 // Function to save notebooks to local storage
 function saveNotebooksToLocalStorage() {
@@ -144,9 +148,48 @@ function renderNotes() {
             <h3>${note.title}</h3>
             <div class="note-meta">Created: ${note.timestamp}</div>
             <div class="note-content">${note.content}</div>
-            <button onclick="deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})">Delete</button>
+            <div class="note-actions">
+                <button class="delete-btn" onclick="deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})">Delete</button>
+                <button class="infographic-btn" data-note-id="${note.id}">Create Infographic</button>
+            </div>
         `;
         notesContainer.appendChild(noteElement);
+    });
+    
+    // Add event listeners for infographic buttons
+    document.querySelectorAll('.infographic-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const noteId = parseInt(this.getAttribute('data-note-id'));
+            const note = findNoteById(noteId);
+            
+            if (note) {
+                // Check if popups are blocked before proceeding
+                if (isPopupBlocked()) {
+                    showPopupBlockedMessage();
+                    return;
+                }
+                
+                try {
+                    // Show loading indicator
+                    this.textContent = 'Generating...';
+                    this.disabled = true;
+                    
+                    // Generate infographic
+                    const htmlContent = await infographicGenerator.generateInfographic(note.content);
+                    
+                    // Open in new window
+                    infographicGenerator.openInfographicInNewWindow(htmlContent);
+                } catch (error) {
+                    console.error('Error generating infographic:', error);
+                    // Show error in a more user-friendly way
+                    alert(`Failed to generate infographic: ${error.message}\n\nPlease check:\n1. Your API key is valid\n2. Popups are not blocked by your browser\n3. You have a stable internet connection`);
+                } finally {
+                    // Restore button
+                    this.textContent = 'Create Infographic';
+                    this.disabled = false;
+                }
+            }
+        });
     });
 }
 
@@ -160,9 +203,51 @@ function getNotebookForNote(noteId) {
     return null;
 }
 
+// Helper function to find a note by its ID
+function findNoteById(noteId) {
+    for (const notebookName in notebooks) {
+        const note = notebooks[notebookName].find(note => note.id === noteId);
+        if (note) {
+            return note;
+        }
+    }
+    return null;
+}
+
+// Function to check if popups are blocked
+function isPopupBlocked() {
+    try {
+        const newWindow = window.open('', '_blank');
+        if (!newWindow) {
+            return true; // Popup blocked
+        }
+        newWindow.close();
+        return false; // Popup not blocked
+    } catch (e) {
+        return true; // Popup blocked
+    }
+}
+
+// Function to show popup blocked message with instructions
+function showPopupBlockedMessage() {
+    alert(`Please enable popups for this site to use the infographic feature.
+    
+To enable popups:
+1. Look for a popup blocker icon in your browser's address bar
+2. Click on it and choose to always allow popups for this site
+3. Alternatively, go to your browser settings and disable popup blocking for this site
+4. Refresh the page and try again
+
+After enabling popups, click the "Create Infographic" button again.`);
+}
+
 // Function to save API key to local storage
 function saveApiKeyToLocalStorage(apiKey) {
     localStorage.setItem('openrouter-api-key', apiKey);
+    // Update infographic generator with new API key
+    if (infographicGenerator) {
+        infographicGenerator.apiKey = apiKey;
+    }
 }
 
 // Function to load API key from local storage
@@ -290,6 +375,12 @@ document.getElementById('save-model-btn').addEventListener('click', function() {
     
     selectedModel = model;
     saveSelectedModelToLocalStorage(model);
+    
+    // Update infographic generator with new model
+    if (infographicGenerator) {
+        infographicGenerator.selectedModel = model;
+    }
+    
     alert(`Model "${model}" selected successfully!`);
 });
 
@@ -378,6 +469,9 @@ window.addEventListener('DOMContentLoaded', function() {
     if (![...modelSelect.options].map(option => option.value).includes(selectedModel)) {
         document.getElementById('custom-model').value = selectedModel;
     }
+    
+    // Initialize infographic generator with current API key and model
+    infographicGenerator = new InfographicGenerator();
 });
 
 // AI integration with OpenRouter
