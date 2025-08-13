@@ -25,18 +25,21 @@ The Settings section has been reorganized to focus solely on API configuration a
 ### 2. Notebook-Integrated Note Creation
 
 #### Add New Note
-The "Add New Note" functionality has been moved to be associated with individual notebooks:
-- Select a specific notebook from the dropdown
-- Enter note title and content
-- Note is added directly to the selected notebook
-- After creation, the interface automatically switches to the Notes tab to view the new note
+The "Add New Note" functionality has been moved from the Settings tab to be integrated directly within each notebook:
+- Navigate to the Notebooks tab
+- Find the notebook you want to add a note to
+- Enter note title and content in the form below the notebook name
+- Note is added directly to that notebook
+- No need to switch tabs to view the new note
 
 #### Generate Note with AI
-The "Generate Note with AI" feature is now also integrated with notebooks:
-- Select a specific notebook for the AI-generated note
+The "Generate Note with AI" feature is now also integrated within each notebook:
+- Navigate to the Notebooks tab
+- Find the notebook you want to add an AI-generated note to
 - Enter a topic or question for the AI to expand upon
 - AI-generated content is automatically formatted with proper HTML styling
-- After generation, the interface switches to the Notes tab to view the new note
+- Note is added directly to that notebook
+- No need to switch tabs to view the new note
 
 ## Technical Implementation Details
 

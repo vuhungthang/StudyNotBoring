@@ -27,15 +27,15 @@ A web-based application for organizing notes into notebooks with AI-powered feat
 3. Click "Create Notebook"
 
 ### Adding Notes
-1. Go to the Settings tab
-2. Select a notebook from the dropdown
-3. Enter a title and content for your note
+1. Go to the Notebooks tab
+2. Find the notebook you want to add a note to
+3. Enter a title and content for your note in the form below the notebook name
 4. Click "Add Note"
 
 ### Generating AI Notes
-1. Go to the Settings tab
-2. Select a notebook for the new note
-3. Enter a topic or question in the prompt field
+1. Go to the Notebooks tab
+2. Find the notebook you want to add an AI-generated note to
+3. Enter a topic or question in the prompt field in the AI form below the notebook name
 4. Click "Generate Note"
 
 ### Creating Infographics
