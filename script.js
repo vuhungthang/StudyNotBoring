@@ -37,11 +37,13 @@ function createNotebook(name) {
 // Function to delete a notebook
 function deleteNotebook(name) {
     if (notebooks[name]) {
-        delete notebooks[name];
-        saveNotebooksToLocalStorage();
-        renderNotebooks();
-        updateNotebookSelects();
-        renderNotes();
+        if (confirm(`Are you sure you want to delete the notebook "${name}" and all its notes?`)) {
+            delete notebooks[name];
+            saveNotebooksToLocalStorage();
+            renderNotebooks();
+            updateNotebookSelects();
+            renderNotes();
+        }
         return true;
     }
     return false;
@@ -84,10 +86,80 @@ function renderNotebooks() {
         notebookElement.classList.add('notebook');
         notebookElement.innerHTML = `
             <h3>${notebookName}</h3>
-            <button onclick="deleteNotebook('${notebookName}')">Delete</button>
+            <button onclick="deleteNotebook('${notebookName}')" class="delete-notebook-btn">Delete</button>
+            
+            <div class="notebook-note-forms">
+                <div class="settings-card">
+                    <h4>Add New Note</h4>
+                    <form class="note-form-inline" data-notebook="${notebookName}">
+                        <input type="text" class="note-title-inline" placeholder="Note Title" required>
+                        <textarea class="note-content-inline" placeholder="Note Content" required></textarea>
+                        <button type="submit">Add Note</button>
+                    </form>
+                </div>
+                
+                <div class="settings-card">
+                    <h4>Generate Note with AI</h4>
+                    <form class="ai-form-inline" data-notebook="${notebookName}">
+                        <input type="text" class="ai-prompt-inline" placeholder="Enter a topic or question" required>
+                        <button type="submit" class="ai-submit-btn-inline">Generate Note</button>
+                        <div class="ai-loading-inline" style="display: none;">Generating...</div>
+                    </form>
+                </div>
+            </div>
         `;
         notebooksContainer.appendChild(notebookElement);
     }
+    
+    // Add event listeners for inline note forms
+    document.querySelectorAll('.note-form-inline').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const notebookName = this.getAttribute('data-notebook');
+            const title = this.querySelector('.note-title-inline').value;
+            const content = this.querySelector('.note-content-inline').value;
+            
+            addNote(notebookName, title, content);
+            this.reset();
+        });
+    });
+    
+    // Add event listeners for inline AI forms
+    document.querySelectorAll('.ai-form-inline').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const notebookName = this.getAttribute('data-notebook');
+            const prompt = this.querySelector('.ai-prompt-inline').value;
+            const apiKey = loadApiKeyFromLocalStorage();
+            const submitBtn = this.querySelector('.ai-submit-btn-inline');
+            const loadingIndicator = this.querySelector('.ai-loading-inline');
+            
+            if (!apiKey) {
+                alert('Please enter your OpenRouter API key first in Settings.');
+                // Switch to settings tab
+                document.querySelector('.nav-tab[data-tab="settings"]').click();
+                return;
+            }
+            
+            // Show loading indicator
+            submitBtn.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            
+            try {
+                const aiNote = await generateNoteWithAI(prompt, apiKey, selectedModel);
+                const formattedContent = formatAIContent(aiNote);
+                addNote(notebookName, `AI: ${prompt}`, formattedContent);
+                this.reset();
+            } catch (error) {
+                console.error('Error generating note with AI:', error);
+                alert(`Failed to generate note with AI: ${error.message}`);
+            } finally {
+                // Hide loading indicator
+                submitBtn.style.display = 'block';
+                loadingIndicator.style.display = 'none';
+            }
+        });
+    });
 }
 
 // Function to update notebook selects
@@ -445,67 +517,8 @@ document.getElementById('save-model-btn').addEventListener('click', function() {
     alert(`Model "${model}" selected successfully!`);
 });
 
-// Event listener for note form submission
-document.getElementById('note-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const notebookSelect = document.getElementById('notebook-select');
-    const notebookName = notebookSelect.value;
-    const title = document.getElementById('note-title').value;
-    const content = document.getElementById('note-content').value;
-    
-    if (!notebookName) {
-        alert('Please select a notebook.');
-        return;
-    }
-    
-    addNote(notebookName, title, content);
-    document.getElementById('note-form').reset();
-    
-    // Switch to notes tab to see the new note
-    document.querySelector('.nav-tab[data-tab="notes"]').click();
-});
-
-// Event listener for AI form submission
-document.getElementById('ai-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const notebookSelect = document.getElementById('ai-notebook-select');
-    const notebookName = notebookSelect.value;
-    const prompt = document.getElementById('ai-prompt').value;
-    const apiKey = loadApiKeyFromLocalStorage();
-    
-    if (!notebookName) {
-        alert('Please select a notebook.');
-        return;
-    }
-    
-    if (!apiKey) {
-        alert('Please enter your OpenRouter API key first.');
-        showApiKeyForm();
-        return;
-    }
-    
-    // Show loading indicator
-    document.getElementById('ai-submit-btn').style.display = 'none';
-    document.getElementById('ai-loading').style.display = 'block';
-    
-    try {
-        const aiNote = await generateNoteWithAI(prompt, apiKey, selectedModel);
-        const formattedContent = formatAIContent(aiNote);
-        addNote(notebookName, `AI: ${prompt}`, formattedContent);
-        
-        // Switch to notes tab to see the new note
-        document.querySelector('.nav-tab[data-tab="notes"]').click();
-    } catch (error) {
-        console.error('Error generating note with AI:', error);
-        alert(`Failed to generate note with AI: ${error.message}`);
-    } finally {
-        // Hide loading indicator
-        document.getElementById('ai-submit-btn').style.display = 'block';
-        document.getElementById('ai-loading').style.display = 'none';
-    }
-    
-    document.getElementById('ai-form').reset();
-});
+// Event listeners for note forms are now handled inline within each notebook
+// Event listeners for AI forms are now handled inline within each notebook
 
 // Event listener for filter notebook select
 document.getElementById('filter-notebook-select').addEventListener('change', renderNotes);

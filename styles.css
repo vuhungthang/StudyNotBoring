@@ -142,6 +142,71 @@ h1 {
     background-color: #c9302c;
 }
 
+.delete-notebook-btn {
+    background-color: #d9534f;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.delete-notebook-btn:hover {
+    background-color: #c9302c;
+}
+
+.notebook-note-forms {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.notebook-note-forms .settings-card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.notebook-note-forms .settings-card h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.notebook-note-forms input, 
+.notebook-note-forms textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.notebook-note-forms button {
+    background-color: #5cb85c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.notebook-note-forms button:hover {
+    background-color: #4cae4c;
+}
+
+.notebook-note-forms .ai-loading-inline {
+    text-align: center;
+    padding: 10px;
+    color: #5cb85c;
+    font-style: italic;
+}
+
 /* Settings Grid */
 .settings-grid {
     display: grid;
