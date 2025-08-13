@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNotBoring</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>My Learning Notebook</h1>
+        </header>
+        <main>
+            <section class="api-key-section" id="api-key-section">
+                <h2>OpenRouter API Key</h2>
+                <form id="api-key-form">
+                    <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required>
+                    <button type="submit">Save API Key</button>
+                </form>
+                <button id="hide-api-key-form" style="display: none;">Hide API Key Form</button>
+            </section>
+            <section class="note-form-section">
+                <h2>Add New Note</h2>
+                <form id="note-form">
+                    <input type="text" id="note-title" placeholder="Note Title" required>
+                    <textarea id="note-content" placeholder="Note Content" required></textarea>
+                    <button type="submit">Add Note</button>
+                </form>
+            </section>
+            <section class="ai-section">
+                <h2>Generate Note with AI</h2>
+                <form id="ai-form">
+                    <input type="text" id="ai-prompt" placeholder="Enter a topic or question" required>
+                    <button type="submit" id="ai-submit-btn">Generate Note</button>
+                    <div id="ai-loading" class="loading" style="display: none;">Generating...</div>
+                </form>
+            </section>
+            <section class="notes-section">
+                <h2>Your Notes</h2>
+                <div id="notes-container"></div>
+            </section>
+        </main>
+        <script src="script.js"></script>
+    </div>
+</body>
+</html>
