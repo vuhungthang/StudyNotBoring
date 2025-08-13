@@ -47,6 +47,10 @@
                             <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required>
                             <button type="submit">Save API Key</button>
                         </form>
+                        <form id="gemini-api-key-form" style="margin-top: 15px;">
+                            <input type="password" id="gemini-api-key" placeholder="Enter your Gemini API key (for voice feature)" required>
+                            <button type="submit">Save Gemini API Key</button>
+                        </form>
                         <button id="hide-api-key-form" style="display: none;">Hide API Key Form</button>
                     </div>
                     
@@ -96,7 +100,7 @@
                 </div>
             </section>
         </main>
-        <script src="script.js"></script>
+        <script src="script.js" type="module"></script>
     </div>
 </body>
 </html>

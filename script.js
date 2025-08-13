@@ -1,5 +1,6 @@
 // script.js
 import InfographicGenerator from './infographicGenerator.js';
+import { getSynthesizedAudio } from './voice.js';
 
 // Data structure for notebooks and notes
 let notebooks = JSON.parse(localStorage.getItem('notebooks')) || {};
@@ -151,6 +152,7 @@ function renderNotes() {
             <div class="note-actions">
                 <button class="delete-btn" onclick="deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})">Delete</button>
                 <button class="infographic-btn" data-note-id="${note.id}">Create Infographic</button>
+                <button class="listen-btn" data-note-id="${note.id}">Listen</button>
             </div>
         `;
         notesContainer.appendChild(noteElement);
@@ -186,6 +188,56 @@ function renderNotes() {
                 } finally {
                     // Restore button
                     this.textContent = 'Create Infographic';
+                    this.disabled = false;
+                }
+            }
+        });
+    });
+    
+    // Add event listeners for listen buttons
+    document.querySelectorAll('.listen-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const noteId = parseInt(this.getAttribute('data-note-id'));
+            const note = findNoteById(noteId);
+            
+            // Check if Gemini API key is set
+            const geminiApiKey = localStorage.getItem('gemini-api-key');
+            if (!geminiApiKey || geminiApiKey === 'YOUR_API_KEY') {
+                // Even without an API key, we can use the Web Speech API as fallback
+                // So we won't show an error message here
+            }
+            
+            if (note) {
+                try {
+                    // Show loading indicator
+                    const originalText = this.textContent;
+                    this.textContent = 'Loading...';
+                    this.disabled = true;
+                    
+                    // Get synthesized audio
+                    const audioData = await getSynthesizedAudio(note.content);
+                    
+                    // If we get audio data, create an audio element and play it
+                    if (audioData) {
+                        // Create audio element and play
+                        const audio = new Audio(`data:audio/mp3;base64,${audioData}`);
+                        audio.play();
+                        
+                        // Reset button when audio finishes playing
+                        audio.addEventListener('ended', () => {
+                            this.textContent = originalText;
+                            this.disabled = false;
+                        });
+                    } else {
+                        // If no audio data is returned, it means Web Speech API was used
+                        // In this case, the speech has already been played, so just reset the button
+                        this.textContent = originalText;
+                        this.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error playing audio:', error);
+                    alert(`Failed to play audio: ${error.message}`);
+                    this.textContent = 'Listen';
                     this.disabled = false;
                 }
             }
@@ -288,7 +340,7 @@ function formatAIContent(content) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         // Convert markdown-style code blocks
-        .replace(/```([\\s\\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
         // Convert inline code
         .replace(/`(.*?)`/g, '<code>$1</code>')
         // Convert markdown-style lists
@@ -353,6 +405,15 @@ document.getElementById('api-key-form').addEventListener('submit', function(e) {
     alert('API Key saved successfully!');
     document.getElementById('api-key-form').reset();
     hideApiKeyForm();
+});
+
+// Event listener for Gemini API key form submission
+document.getElementById('gemini-api-key-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const geminiApiKey = document.getElementById('gemini-api-key').value;
+    localStorage.setItem('gemini-api-key', geminiApiKey);
+    alert('Gemini API Key saved successfully!');
+    document.getElementById('gemini-api-key-form').reset();
 });
 
 // Event listener for hide API key form button
@@ -466,12 +527,18 @@ window.addEventListener('DOMContentLoaded', function() {
     modelSelect.value = selectedModel;
     
     // If the selected model is not in the dropdown, set it as custom
-    if (![...modelSelect.options].map(option => option.value).includes(selectedModel)) {
+    if ([...modelSelect.options].map(option => option.value).includes(selectedModel)) {
         document.getElementById('custom-model').value = selectedModel;
     }
     
     // Initialize infographic generator with current API key and model
     infographicGenerator = new InfographicGenerator();
+    
+    // Pre-fill Gemini API key if it exists
+    const savedGeminiApiKey = localStorage.getItem('gemini-api-key');
+    if (savedGeminiApiKey) {
+        document.getElementById('gemini-api-key').value = savedGeminiApiKey;
+    }
 });
 
 // AI integration with OpenRouter

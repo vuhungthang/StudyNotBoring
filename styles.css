@@ -250,8 +250,44 @@ h1 {
     margin-bottom: 15px;
 }
 
-.note button {
+.note-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.note-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn {
     background-color: #d9534f;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c9302c;
+}
+
+.infographic-btn {
+    background-color: #5bc0de;
+    color: white;
+}
+
+.infographic-btn:hover {
+    background-color: #46b8da;
+}
+
+.infographic-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.listen-btn {
+    background-color: #5cb85c;
     color: white;
     padding: 5px 10px;
     border: none;
@@ -259,8 +295,13 @@ h1 {
     cursor: pointer;
 }
 
-.note button:hover {
-    background-color: #c9302c;
+.listen-btn:hover {
+    background-color: #4cae4c;
+}
+
+.listen-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 
 .loading {
