@@ -369,6 +369,14 @@ h1 {
     cursor: not-allowed;
 }
 
+.listen-btn.playing {
+    background-color: #f0ad4e;
+}
+
+.listen-btn.playing:hover {
+    background-color: #eea236;
+}
+
 .loading {
     text-align: center;
     padding: 10px;
@@ -461,4 +469,28 @@ h1 {
         align-items: flex-start;
         gap: 10px;
     }
+}.stop-btn {
+    background-color: #d9534f;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.stop-btn:hover {
+    background-color: #c9302c;
+}
+
+/* Additional styles for audio buttons */
+.note-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.listen-btn, .stop-btn {
+    min-width: 60px;
+    text-align: center;
 }

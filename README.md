@@ -10,14 +10,21 @@ A web-based application for organizing notes into notebooks with AI-powered feat
 - **Text-to-Speech**: Listen to your notes being read aloud
 - **API Integration**: Works with OpenRouter and Gemini APIs
 
-## Setup
+## Getting Started
 
-1. Open `index.html` in a web browser
-2. Navigate to the Settings tab to configure your API keys:
-   - OpenRouter API key for AI features
-   - Gemini API key for enhanced voice synthesis (optional)
-3. Select your preferred AI model
-4. Start creating notebooks and notes!
+1. Clone this repository
+2. Open `index.html` in your browser
+3. Set your Google Generative AI API key in the settings
+4. Start taking notes!
+
+## API Key Setup
+
+To use the text-to-speech functionality, you'll need to set up a Google Generative AI API key:
+
+1. Go to [Google AI Studio](https://aistudio.google.com/)
+2. Create a new API key
+3. Copy the API key
+4. In the StudyNotBoring app, go to Settings and paste your API key in the "Gemini API Key" field
 
 ## Usage
 
@@ -46,7 +53,13 @@ A web-based application for organizing notes into notebooks with AI-powered feat
 ### Listening to Notes
 1. In the Notes tab, find the note you want to hear
 2. Click "Listen" on that note
-3. The note will be read aloud using text-to-speech
+3. The note will be read aloud using the new Gemini 2.5 Flash TTS model
+
+### Downloading Audio Files
+1. In the Notes tab, find the note you want to download as audio
+2. Click "Download Audio" on that note
+3. The note will be converted to speech and downloaded as a WAV file
+4. You'll need to set your Gemini API key in Settings for this feature to work
 
 ## Technical Details
 

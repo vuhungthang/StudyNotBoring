@@ -1,0 +1,22 @@
+{
+  "name": "studynotboring",
+  "version": "1.0.0",
+  "description": "A note-taking app with AI features",
+  "main": "script.js",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve .",
+    "test:tts": "node test-voice.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "wav": "^1.0.2"
+  },
+  "keywords": [
+    "notes",
+    "ai",
+    "education"
+  ],
+  "author": "StudyNotBoring",
+  "license": "MIT"
+}

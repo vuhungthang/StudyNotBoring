@@ -1,121 +1,184 @@
-async function getSynthesizedAudio(textToSpeak) {
+// Using the new Gemini TTS model via direct API calls
+// This provides better quality and more natural speech
+
+async function getSynthesizedAudio(textToSpeak, voiceName = 'Kore') {
   const API_KEY = localStorage.getItem('gemini-api-key') || 'YOUR_API_KEY';
   
   if (!API_KEY || API_KEY === 'YOUR_API_KEY') {
-    // If no API key is set, fall back to Web Speech API
-    return await synthesizeWithWebSpeechAPI(textToSpeak);
+    // If no API key is set, show an error popup
+    throw new Error('Please set your Google Cloud API key in the settings');
   }
   
-  // Try to use the Gemini API first
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
-
-    const requestBody = {
-      "contents": [
-        {
-          "parts": [
-            {
-              "text": textToSpeak
-            }
-          ]
-        }
-      ],
-      "generationConfig": {
-        "responseMimeType": "application/json"
-      }
-    };
-
-    const response = await fetch(url, {
+    // Using the new Gemini TTS model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `HTTP error! status: ${response.status}`;
-      
-      try {
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.error?.message || errorMessage;
-      } catch (e) {
-        // If parsing fails, use the raw error text
-        if (errorText) {
-          errorMessage = errorText;
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: textToSpeak }] }],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName }
+            }
+          }
         }
-      }
-      
-      throw new Error(errorMessage);
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`TTS API request failed: ${errorData.error?.message || 'Unknown error'}`);
     }
-
+    
     const data = await response.json();
+    const audioPart = data.candidates?.[0]?.content?.parts?.[0];
     
-    // Check if the response has the expected structure for audio
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
-      throw new Error('Unexpected response format from Gemini API');
+    if (!audioPart?.inlineData?.data) {
+      throw new Error('No audio data received.');
     }
     
-    // The audio content might be returned differently, so we need to check the structure
-    const audioPart = data.candidates[0].content.parts[0];
+    // Log the MIME type for debugging
+    console.log('Audio MIME type:', audioPart.inlineData.mimeType);
     
-    // If we get audio data directly, it might be in a different format
-    if (audioPart.audioUrl) {
-      // If the API returns an audio URL, we would need to fetch the audio from that URL
-      // This is just a placeholder for handling that case
-      throw new Error('Audio URL returned instead of audio data. This implementation needs to be updated.');
-    } else if (audioPart.inlineData && audioPart.inlineData.data) {
-      // The audio content is returned as a base64 encoded string
-      const audioContent = audioPart.inlineData.data;
-      return audioContent;
-    } else {
-      throw new Error('Unexpected response format from Gemini API - no audio data found');
-    }
+    // Return both the audio data and its MIME type
+    return {
+      data: audioPart.inlineData.data,
+      mimeType: audioPart.inlineData.mimeType
+    };
   } catch (error) {
-    console.error('Error with Gemini API TTS, falling back to Web Speech API:', error);
-    // Fall back to Web Speech API if Gemini API fails
-    return await synthesizeWithWebSpeechAPI(textToSpeak);
+    console.error('Error with Google TTS:', error);
+    throw error;
   }
 }
 
-// Fallback function using Web Speech API
-function synthesizeWithWebSpeechAPI(textToSpeak) {
-  return new Promise((resolve, reject) => {
-    // Check if the Web Speech API is supported
-    if ('speechSynthesis' in window) {
-      // Create a new utterance
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      
-      // Set default properties
-      utterance.volume = 1; // 0 to 1
-      utterance.rate = 1; // 0.1 to 10
-      utterance.pitch = 1; // 0 to 2
-      
-      // Event when speech starts
-      utterance.onstart = () => {
-        console.log('Speech started');
-      };
-      
-      // Event when speech ends
-      utterance.onend = () => {
-        console.log('Speech ended');
-        // Resolve with null since we're playing directly
-        resolve(null);
-      };
-      
-      // Event for errors
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event.error);
-        reject(new Error(`Speech synthesis error: ${event.error}`));
-      };
-      
-      // Speak the utterance
-      speechSynthesis.speak(utterance);
-    } else {
-      reject(new Error('Web Speech API is not supported in this browser'));
+// Function to control Web Speech API playback
+function controlWebSpeechPlayback(action) {
+  console.log('Control Web Speech Playback:', action);
+  if ('speechSynthesis' in window) {
+    console.log('Speech synthesis state:', {
+      speaking: speechSynthesis.speaking,
+      paused: speechSynthesis.paused
+    });
+    
+    switch (action) {
+      case 'pause':
+        if (speechSynthesis.speaking && !speechSynthesis.paused) {
+          console.log('Pausing speech');
+          speechSynthesis.pause();
+          return true;
+        }
+        break;
+      case 'resume':
+        if (speechSynthesis.paused) {
+          console.log('Resuming speech');
+          speechSynthesis.resume();
+          return true;
+        }
+        break;
+      case 'stop':
+        if (speechSynthesis.speaking) {
+          console.log('Stopping speech');
+          speechSynthesis.cancel();
+          return true;
+        }
+        break;
     }
-  });
+  }
+  console.log('Control action not executed');
+  return false;
 }
 
-export { getSynthesizedAudio };
+// Function to convert PCM data to WAV format
+function convertPcmToWav(pcmBase64, sampleRate = 24000, channels = 1, bitDepth = 16) {
+  // Convert base64 to ArrayBuffer
+  const binaryString = atob(pcmBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  
+  // Calculate WAV file size
+  const dataSize = bytes.length;
+  const headerSize = 44;
+  const fileSize = headerSize + dataSize;
+  
+  // Create WAV header
+  const buffer = new ArrayBuffer(fileSize);
+  const view = new DataView(buffer);
+  
+  // RIFF identifier
+  writeString(view, 0, 'RIFF');
+  // File size
+  view.setUint32(4, fileSize - 8, true);
+  // RIFF type
+  writeString(view, 8, 'WAVE');
+  // Format chunk identifier
+  writeString(view, 12, 'fmt ');
+  // Format chunk size
+  view.setUint32(16, 16, true);
+  // Sample format (1 is PCM)
+  view.setUint16(20, 1, true);
+  // Channel count
+  view.setUint16(22, channels, true);
+  // Sample rate
+  view.setUint32(24, sampleRate, true);
+  // Byte rate
+  view.setUint32(28, sampleRate * channels * bitDepth / 8, true);
+  // Block align
+  view.setUint16(32, channels * bitDepth / 8, true);
+  // Bits per sample
+  view.setUint16(34, bitDepth, true);
+  // Data chunk identifier
+  writeString(view, 36, 'data');
+  // Data chunk size
+  view.setUint32(40, dataSize, true);
+  // Write PCM data
+  for (let i = 0; i < bytes.length; i++) {
+    view.setUint8(headerSize + i, bytes[i]);
+  }
+  
+  return buffer;
+}
+
+// Helper function to write string to DataView
+function writeString(view, offset, string) {
+  for (let i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
+
+// Function to save audio as WAV file
+async function saveAudioAsWav(audioData, filename = 'note-audio.wav') {
+  try {
+    // Convert PCM to WAV
+    const wavBuffer = convertPcmToWav(audioData);
+    
+    // Create blob and download
+    const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create download link
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
+    return true;
+  } catch (error) {
+    console.error('Error saving audio as WAV:', error);
+    throw error;
+  }
+}
+
+export { getSynthesizedAudio, saveAudioAsWav, controlWebSpeechPlayback };

@@ -5,6 +5,17 @@ StudyNotBoring is a web-based application for organizing notes into notebooks wi
 
 ## Recent Changes
 
+### 3. Audio Download Feature
+
+#### Download Audio
+A new feature has been added to download notes as WAV audio files:
+- Navigate to the Notes tab
+- Find the note you want to download as audio
+- Click "Download Audio" on that note
+- The note will be converted to speech using Google Generative AI
+- The audio will be downloaded as a WAV file with a name based on the note title
+- Requires a valid Gemini API key to be set in the Settings
+
 ### 1. Settings Restructuring
 
 #### API Configuration and AI Model Selection
@@ -73,7 +84,8 @@ notebooks: {
 2. **Gemini API**
    - Used for text-to-speech functionality
    - Endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent
-   - Falls back to Web Speech API if no key is provided
+- Model: gemini-2.5-flash-preview-tts
+   - Requires a valid Gemini API key (no fallback)
 
 ### UI Components
 
@@ -131,8 +143,14 @@ notebooks: {
 
 ### Voice Synthesis
 - Listen to your notes being read aloud
-- Uses Gemini API for high-quality speech or Web Speech API as fallback
-- Works offline with the browser's built-in speech synthesis
+- Uses Gemini API for high-quality speech (requires API key)
+- Shows an error if the API is not configured
+
+### Audio Download
+- Download your notes as high-quality WAV audio files
+- Uses Google Generative AI with the new Gemini 2.5 Flash TTS model for text-to-speech conversion
+- Requires a valid Gemini API key
+- Files are automatically named based on the note title
 
 ### Note Formatting
 - AI-generated notes are automatically formatted with:

@@ -1,6 +1,65 @@
 // script.js
 import InfographicGenerator from './infographicGenerator.js';
-import { getSynthesizedAudio } from './voice.js';
+import { getSynthesizedAudio, saveAudioAsWav, controlWebSpeechPlayback } from './voice.js';
+
+// Function to convert PCM data to WAV format
+function convertPcmToWav(pcmBase64, sampleRate = 24000, channels = 1, bitDepth = 16) {
+  // Convert base64 to ArrayBuffer
+  const binaryString = atob(pcmBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  
+  // Calculate WAV file size
+  const dataSize = bytes.length;
+  const headerSize = 44;
+  const fileSize = headerSize + dataSize;
+  
+  // Create WAV header
+  const buffer = new ArrayBuffer(fileSize);
+  const view = new DataView(buffer);
+  
+  // RIFF identifier
+  writeString(view, 0, 'RIFF');
+  // File size
+  view.setUint32(4, fileSize - 8, true);
+  // RIFF type
+  writeString(view, 8, 'WAVE');
+  // Format chunk identifier
+  writeString(view, 12, 'fmt ');
+  // Format chunk size
+  view.setUint32(16, 16, true);
+  // Sample format (1 is PCM)
+  view.setUint16(20, 1, true);
+  // Channel count
+  view.setUint16(22, channels, true);
+  // Sample rate
+  view.setUint32(24, sampleRate, true);
+  // Byte rate
+  view.setUint32(28, sampleRate * channels * bitDepth / 8, true);
+  // Block align
+  view.setUint16(32, channels * bitDepth / 8, true);
+  // Bits per sample
+  view.setUint16(34, bitDepth, true);
+  // Data chunk identifier
+  writeString(view, 36, 'data');
+  // Data chunk size
+  view.setUint32(40, dataSize, true);
+  // Write PCM data
+  for (let i = 0; i < bytes.length; i++) {
+    view.setUint8(headerSize + i, bytes[i]);
+  }
+  
+  return buffer;
+}
+
+// Helper function to write string to DataView
+function writeString(view, offset, string) {
+  for (let i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
 
 // Data structure for notebooks and notes
 let notebooks = JSON.parse(localStorage.getItem('notebooks')) || {};
@@ -171,17 +230,20 @@ function updateNotebookSelects() {
     ];
     
     selects.forEach(select => {
-        // Clear existing options except the first one
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
-        
-        // Add notebook options
-        for (const notebookName in notebooks) {
-            const option = document.createElement('option');
-            option.value = notebookName;
-            option.textContent = notebookName;
-            select.appendChild(option);
+        // Check if select element exists before trying to modify it
+        if (select) {
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // Add notebook options
+            for (const notebookName in notebooks) {
+                const option = document.createElement('option');
+                option.value = notebookName;
+                option.textContent = notebookName;
+                select.appendChild(option);
+            }
         }
     });
 }
@@ -225,6 +287,8 @@ function renderNotes() {
                 <button class="delete-btn" onclick="deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})">Delete</button>
                 <button class="infographic-btn" data-note-id="${note.id}">Create Infographic</button>
                 <button class="listen-btn" data-note-id="${note.id}">Listen</button>
+                <button class="stop-btn" data-note-id="${note.id}" style="display: none;">Stop</button>
+                <button class="download-audio-btn" data-note-id="${note.id}">Download Audio</button>
             </div>
         `;
         notesContainer.appendChild(noteElement);
@@ -269,13 +333,48 @@ function renderNotes() {
     // Add event listeners for listen buttons
     document.querySelectorAll('.listen-btn').forEach(button => {
         button.addEventListener('click', async function() {
+            console.log('Listen button clicked');
             const noteId = parseInt(this.getAttribute('data-note-id'));
             const note = findNoteById(noteId);
+            const stopButton = this.parentNode.querySelector('.stop-btn');
+            
+            // Check if this is a pause/resume action
+            if (this.classList.contains('playing')) {
+                console.log('Toggle pause/resume');
+                // Toggle between pause and resume
+                if (this.textContent === 'Pause') {
+                    // Pause the audio
+                    console.log('Pausing audio');
+                    controlWebSpeechPlayback('pause');
+                    this.textContent = 'Resume';
+                } else {
+                    // Resume the audio
+                    console.log('Resuming audio');
+                    controlWebSpeechPlayback('resume');
+                    this.textContent = 'Pause';
+                }
+                return;
+            }
+            
+            // If another audio is playing, stop it first
+            if (window.currentPlayingButton && window.currentPlayingButton !== this) {
+                console.log('Stopping previous audio');
+                // Stop the currently playing audio
+                controlWebSpeechPlayback('stop');
+                window.currentPlayingButton.classList.remove('playing');
+                window.currentPlayingButton.textContent = 'Listen';
+                // Hide stop button for the previous playing button
+                const prevStopButton = window.currentPlayingButton.parentNode.querySelector('.stop-btn');
+                if (prevStopButton) {
+                    prevStopButton.style.display = 'none';
+                }
+                window.currentPlayingButton = null;
+            }
             
             // Check if Gemini API key is set
             const geminiApiKey = localStorage.getItem('gemini-api-key');
             if (!geminiApiKey || geminiApiKey === 'YOUR_API_KEY') {
-                // Even without an API key, we can use the Web Speech API as fallback
+                                    // Without an API key, an error will be shown
                 // So we won't show an error message here
             }
             
@@ -287,31 +386,268 @@ function renderNotes() {
                     this.disabled = true;
                     
                     // Get synthesized audio
-                    const audioData = await getSynthesizedAudio(note.content);
+                    const audioResult = await getSynthesizedAudio(note.content);
+                    
+                    // Store reference to current button for later use
+                    window.currentPlayingButton = this;
                     
                     // If we get audio data, create an audio element and play it
-                    if (audioData) {
-                        // Create audio element and play
-                        const audio = new Audio(`data:audio/mp3;base64,${audioData}`);
-                        audio.play();
+                    if (audioResult) {
+                        console.log('Playing audio with audio element');
+                        console.log('Audio MIME type:', audioResult.mimeType);
+                        console.log('Audio data length:', audioResult.data.length);
                         
-                        // Reset button when audio finishes playing
-                        audio.addEventListener('ended', () => {
+                        try {
+                            // Convert PCM to WAV for browser compatibility
+                            const wavBuffer = convertPcmToWav(audioResult.data);
+                            const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+                            const wavUrl = URL.createObjectURL(wavBlob);
+                            
+                            // Create audio element and play
+                            const audio = new Audio(wavUrl);
+                            
+                            // Log audio element properties for debugging
+                            console.log('Audio element created:', audio);
+                            console.log('Audio element src length:', wavUrl?.length);
+                            
+                            // Check if the browser requires user interaction for audio playback
+                            if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
+                                console.log('Audio context is available');
+                            } else {
+                                console.log('Audio context is not available');
+                            }
+                            
+                            // Add error handling for audio playback
+                            audio.addEventListener('error', (e) => {
+                                console.error('Audio playback error:', e);
+                                console.error('Audio error code:', audio.error?.code);
+                                console.error('Audio error message:', audio.error?.message);
+                                alert('Error playing audio. Please check your browser console for more details.');
+                                // Reset button state
+                                this.classList.remove('playing');
+                                this.textContent = originalText;
+                                this.disabled = false;
+                                if (stopButton) {
+                                    stopButton.style.display = 'none';
+                                }
+                                if (window.currentPlayingButton === this) {
+                                    window.currentPlayingButton = null;
+                                }
+                                // Clean up URL
+                                URL.revokeObjectURL(wavUrl);
+                            });
+                            
+                            // Try to play the audio
+                            // Note: Browsers may require user interaction to play audio
+                            const playPromise = audio.play();
+                            
+                            if (playPromise !== undefined) {
+                                playPromise
+                                    .then(() => {
+                                        // Audio playback started successfully
+                                        console.log('Audio playback started');
+                                        console.log('Audio is playing:', !audio.paused);
+                                        
+                                        // Change button to pause state
+                                        this.classList.add('playing');
+                                        this.textContent = 'Pause';
+                                        this.disabled = false;
+                                        
+                                        // Show stop button
+                                        if (stopButton) {
+                                            stopButton.style.display = 'inline-block';
+                                        }
+                                        
+                                        // Reset button when audio finishes playing
+                                        audio.addEventListener('ended', () => {
+                                            console.log('Audio finished playing');
+                                            this.classList.remove('playing');
+                                            this.textContent = originalText;
+                                            if (stopButton) {
+                                                stopButton.style.display = 'none';
+                                            }
+                                            if (window.currentPlayingButton === this) {
+                                                window.currentPlayingButton = null;
+                                            }
+                                            // Clean up URL
+                                            URL.revokeObjectURL(wavUrl);
+                                        });
+                                        
+                                        // Handle pause/resume for audio element
+                                        audio.addEventListener('pause', () => {
+                                            if (this.classList.contains('playing')) {
+                                                this.textContent = 'Resume';
+                                            }
+                                        });
+                                        
+                                        audio.addEventListener('play', () => {
+                                            if (this.classList.contains('playing')) {
+                                                this.textContent = 'Pause';
+                                            }
+                                        });
+                                    })
+                                    .catch((error) => {
+                                        console.error('Error playing audio:', error);
+                                        console.error('Error name:', error.name);
+                                        console.error('Error message:', error.message);
+                                        alert('Failed to play audio: ' + error.message);
+                                        // Reset button state
+                                        this.classList.remove('playing');
+                                        this.textContent = originalText;
+                                        this.disabled = false;
+                                        if (stopButton) {
+                                            stopButton.style.display = 'none';
+                                        }
+                                        if (window.currentPlayingButton === this) {
+                                            window.currentPlayingButton = null;
+                                        }
+                                        // Clean up URL
+                                        URL.revokeObjectURL(wavUrl);
+                                    });
+                            }
+                        } catch (conversionError) {
+                            console.error('Error converting PCM to WAV:', conversionError);
+                            alert('Failed to convert audio: ' + conversionError.message);
+                            // Reset button state
+                            this.classList.remove('playing');
                             this.textContent = originalText;
                             this.disabled = false;
-                        });
+                            if (stopButton) {
+                                stopButton.style.display = 'none';
+                            }
+                            if (window.currentPlayingButton === this) {
+                                window.currentPlayingButton = null;
+                            }
+                        }
                     } else {
+                        // This code should never be reached since we're now throwing an error instead of using fallback
+                        console.log('Playing audio with Web Speech API');
                         // If no audio data is returned, it means Web Speech API was used
-                        // In this case, the speech has already been played, so just reset the button
-                        this.textContent = originalText;
+                        // In this case, change button to pause state
+                        this.classList.add('playing');
+                        this.textContent = 'Pause';
                         this.disabled = false;
+                        
+                        // Show stop button
+                        if (stopButton) {
+                            stopButton.style.display = 'inline-block';
+                        }
+                        
+                        // Set up a timer to check when speech ends
+                        const checkSpeechStatus = () => {
+                            if (!speechSynthesis.speaking) {
+                                // Speech has ended
+                                // This code should never be reached since we're now throwing an error instead of using fallback
+                            console.log('Web Speech API finished');
+                                this.classList.remove('playing');
+                                this.textContent = originalText;
+                                if (stopButton) {
+                                    stopButton.style.display = 'none';
+                                }
+                                if (window.currentPlayingButton === this) {
+                                    window.currentPlayingButton = null;
+                                }
+                            } else {
+                                // Check again in 100ms
+                                setTimeout(checkSpeechStatus, 100);
+                            }
+                        };
+                        
+                        // Start checking speech status
+                        setTimeout(checkSpeechStatus, 100);
                     }
                 } catch (error) {
                     console.error('Error playing audio:', error);
                     alert(`Failed to play audio: ${error.message}`);
                     this.textContent = 'Listen';
+                    this.classList.remove('playing');
+                    this.disabled = false;
+                    if (stopButton) {
+                        stopButton.style.display = 'none';
+                    }
+                    if (window.currentPlayingButton === this) {
+                        window.currentPlayingButton = null;
+                    }
+                }
+            }
+        });
+    });
+    
+    // Add event listeners for download audio buttons
+    document.querySelectorAll('.download-audio-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const noteId = parseInt(this.getAttribute('data-note-id'));
+            const note = findNoteById(noteId);
+            
+            // Check if Gemini API key is set
+            const geminiApiKey = localStorage.getItem('gemini-api-key');
+            if (!geminiApiKey || geminiApiKey === 'YOUR_API_KEY') {
+                alert('Please set your Gemini API key in Settings to download audio.');
+                return;
+            }
+            
+            if (note) {
+                try {
+                    // Show loading indicator
+                    const originalText = this.textContent;
+                    this.textContent = 'Generating...';
+                    this.disabled = true;
+                    
+                    // Get synthesized audio
+                    const audioResult = await getSynthesizedAudio(note.content);
+                    
+                    // If we get audio data, save it as WAV
+                    if (audioResult) {
+                        const filename = `${note.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_audio.wav`;
+                        await saveAudioAsWav(audioResult.data, filename);
+                    } else {
+                        // This code should never be reached since we're now throwing an error instead of using fallback
+                        // If no audio data is returned, it means Web Speech API was used
+                        // In this case, we can't save the audio
+                        alert('Audio was played using system speech synthesis and cannot be saved. Set a Gemini API key for downloadable audio.');
+                    }
+                } catch (error) {
+                    console.error('Error downloading audio:', error);
+                    alert(`Failed to download audio: ${error.message}`);
+                } finally {
+                    // Reset button
+                    this.textContent = originalText;
                     this.disabled = false;
                 }
+            }
+        });
+    });
+    
+    // Set up stop button event listeners
+    setupStopButtonEventListeners();
+}
+
+// Function to set up stop button event listeners
+function setupStopButtonEventListeners() {
+    console.log('Setting up stop button event listeners');
+    const stopButtons = document.querySelectorAll('.stop-btn');
+    console.log('Found stop buttons:', stopButtons.length);
+    
+    stopButtons.forEach(button => {
+        console.log('Adding event listener to stop button');
+        button.addEventListener('click', function() {
+            console.log('Stop button clicked');
+            const noteId = parseInt(this.getAttribute('data-note-id'));
+            const listenButton = this.parentNode.querySelector('.listen-btn');
+            
+            // Stop the audio
+            controlWebSpeechPlayback('stop');
+            
+            // Reset the listen button
+            listenButton.classList.remove('playing');
+            listenButton.textContent = 'Listen';
+            
+            // Hide the stop button
+            this.style.display = 'none';
+            
+            // Clear the current playing button reference if it's this button
+            if (window.currentPlayingButton === listenButton) {
+                window.currentPlayingButton = null;
             }
         });
     });
@@ -435,24 +771,38 @@ function formatAIContent(content) {
 
 // Tab navigation
 function setupTabNavigation() {
-    const tabs = document.querySelectorAll('.nav-tab');
-    const tabContents = document.querySelectorAll('.tab-content');
+    // Use event delegation on the parent nav element
+    const nav = document.querySelector('.main-nav');
     
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
+    if (!nav) {
+        console.warn('Navigation element not found');
+        return;
+    }
+    
+    nav.addEventListener('click', (e) => {
+        // Check if clicked element is a tab button
+        if (e.target.classList.contains('nav-tab')) {
+            e.preventDefault();
+            
             // Remove active class from all tabs and contents
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
             // Add active class to clicked tab
-            tab.classList.add('active');
+            e.target.classList.add('active');
             
             // Show corresponding content
-            const tabName = tab.getAttribute('data-tab');
-            document.getElementById(`${tabName}-section`).classList.add('active');
-        });
+            const tabName = e.target.getAttribute('data-tab');
+            const targetContent = document.getElementById(`${tabName}-section`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        }
     });
 }
+
+// Set up tab navigation immediately
+setupTabNavigation();
 
 // Event listener for creating a new notebook
 document.getElementById('create-notebook-btn').addEventListener('click', function() {
