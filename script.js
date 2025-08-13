@@ -132,6 +132,11 @@ function renderNotes() {
     // Sort notes by timestamp (newest first)
     notesToDisplay.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
+    if (notesToDisplay.length === 0) {
+        notesContainer.innerHTML = '<p class="no-notes">No notes found. Create your first note!</p>';
+        return;
+    }
+    
     notesToDisplay.forEach(note => {
         const noteElement = document.createElement('div');
         noteElement.classList.add('note');
@@ -167,14 +172,24 @@ function loadApiKeyFromLocalStorage() {
 
 // Function to hide the API key form
 function hideApiKeyForm() {
-    const apiKeySection = document.getElementById('api-key-section');
-    apiKeySection.style.display = 'none';
+    const apiKeySection = document.querySelector('#api-key-form').closest('.settings-card');
+    const form = document.getElementById('api-key-form');
+    form.style.display = 'none';
+    
+    // Show the hide button
+    const hideButton = document.getElementById('hide-api-key-form');
+    hideButton.style.display = 'block';
 }
 
 // Function to show the API key form
 function showApiKeyForm() {
-    const apiKeySection = document.getElementById('api-key-section');
-    apiKeySection.style.display = 'block';
+    const apiKeySection = document.querySelector('#api-key-form').closest('.settings-card');
+    const form = document.getElementById('api-key-form');
+    form.style.display = 'block';
+    
+    // Hide the hide button
+    const hideButton = document.getElementById('hide-api-key-form');
+    hideButton.style.display = 'none';
 }
 
 // Function to format AI-generated content
@@ -188,7 +203,7 @@ function formatAIContent(content) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         // Convert markdown-style code blocks
-        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/```([\\s\\S]*?)```/g, '<pre><code>$1</code></pre>')
         // Convert inline code
         .replace(/`(.*?)`/g, '<code>$1</code>')
         // Convert markdown-style lists
@@ -207,6 +222,27 @@ function formatAIContent(content) {
     
     // Wrap content in a div for styling
     return `<div class="ai-content">${formattedContent}</div>`;
+}
+
+// Tab navigation
+function setupTabNavigation() {
+    const tabs = document.querySelectorAll('.nav-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            tab.classList.add('active');
+            
+            // Show corresponding content
+            const tabName = tab.getAttribute('data-tab');
+            document.getElementById(`${tabName}-section`).classList.add('active');
+        });
+    });
 }
 
 // Event listener for creating a new notebook
@@ -232,16 +268,12 @@ document.getElementById('api-key-form').addEventListener('submit', function(e) {
     alert('API Key saved successfully!');
     document.getElementById('api-key-form').reset();
     hideApiKeyForm();
-    
-    // Show the hide button
-    document.getElementById('hide-api-key-form').style.display = 'block';
 });
 
 // Event listener for hide API key form button
 document.getElementById('hide-api-key-form').addEventListener('click', function(e) {
     e.preventDefault();
     showApiKeyForm();
-    document.getElementById('hide-api-key-form').style.display = 'none';
 });
 
 // Event listener for model selection
@@ -276,6 +308,9 @@ document.getElementById('note-form').addEventListener('submit', function(e) {
     
     addNote(notebookName, title, content);
     document.getElementById('note-form').reset();
+    
+    // Switch to notes tab to see the new note
+    document.querySelector('.nav-tab[data-tab="notes"]').click();
 });
 
 // Event listener for AI form submission
@@ -305,6 +340,9 @@ document.getElementById('ai-form').addEventListener('submit', async function(e) 
         const aiNote = await generateNoteWithAI(prompt, apiKey, selectedModel);
         const formattedContent = formatAIContent(aiNote);
         addNote(notebookName, `AI: ${prompt}`, formattedContent);
+        
+        // Switch to notes tab to see the new note
+        document.querySelector('.nav-tab[data-tab="notes"]').click();
     } catch (error) {
         console.error('Error generating note with AI:', error);
         alert(`Failed to generate note with AI: ${error.message}`);
@@ -322,6 +360,7 @@ document.getElementById('filter-notebook-select').addEventListener('change', ren
 
 // Load notebooks, API key, and selected model when the page loads
 window.addEventListener('DOMContentLoaded', function() {
+    setupTabNavigation();
     renderNotebooks();
     updateNotebookSelects();
     renderNotes();
@@ -329,7 +368,6 @@ window.addEventListener('DOMContentLoaded', function() {
     const savedApiKey = loadApiKeyFromLocalStorage();
     if (savedApiKey) {
         hideApiKeyForm();
-        document.getElementById('hide-api-key-form').style.display = 'block';
     }
     
     // Set the selected model in the dropdown

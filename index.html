@@ -10,9 +10,26 @@
     <div class="container">
         <header>
             <h1>My Learning Notebook</h1>
+            <nav class="main-nav">
+                <button class="nav-tab active" data-tab="notes">Notes</button>
+                <button class="nav-tab" data-tab="notebooks">Notebooks</button>
+                <button class="nav-tab" data-tab="settings">Settings</button>
+            </nav>
         </header>
         <main>
-            <section class="notebook-section">
+            <!-- Notes Section -->
+            <section id="notes-section" class="tab-content active">
+                <div class="section-header">
+                    <h2>Your Notes</h2>
+                    <select id="filter-notebook-select">
+                        <option value="">All Notebooks</option>
+                    </select>
+                </div>
+                <div class="notes-grid" id="notes-container"></div>
+            </section>
+            
+            <!-- Notebooks Section -->
+            <section id="notebooks-section" class="tab-content">
                 <h2>Notebooks</h2>
                 <div class="notebook-controls">
                     <input type="text" id="new-notebook-name" placeholder="New notebook name" required>
@@ -20,61 +37,63 @@
                 </div>
                 <div id="notebooks-container"></div>
             </section>
-            <section class="api-key-section" id="api-key-section">
-                <h2>OpenRouter API Key</h2>
-                <form id="api-key-form">
-                    <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required>
-                    <button type="submit">Save API Key</button>
-                </form>
-                <button id="hide-api-key-form" style="display: none;">Hide API Key Form</button>
-            </section>
-            <section class="model-section" id="model-section">
-                <h2>AI Model Selection</h2>
-                <div class="model-controls">
-                    <select id="model-select">
-                        <option value="openrouter/auto">Auto Select (Recommended)</option>
-                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        <option value="openai/gpt-4">GPT-4</option>
-                        <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
-                        <option value="anthropic/claude-2">Claude 2</option>
-                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
-                        <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
-                        <option value="google/palm-2-chat-bison">PaLM 2 Chat</option>
-                        <option value="google/gemini-pro">Gemini Pro</option>
-                        <option value="meta-llama/llama-2-70b-chat">Llama 2 70B Chat</option>
-                    </select>
-                    <input type="text" id="custom-model" placeholder="Or enter a custom model name">
+            
+            <!-- Settings Section -->
+            <section id="settings-section" class="tab-content">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h2>API Configuration</h2>
+                        <form id="api-key-form">
+                            <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required>
+                            <button type="submit">Save API Key</button>
+                        </form>
+                        <button id="hide-api-key-form" style="display: none;">Hide API Key Form</button>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h2>AI Model Selection</h2>
+                        <div class="model-controls">
+                            <select id="model-select">
+                                <option value="openrouter/auto">Auto Select (Recommended)</option>
+                                <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                <option value="openai/gpt-4">GPT-4</option>
+                                <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                                <option value="anthropic/claude-2">Claude 2</option>
+                                <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                                <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+                                <option value="google/palm-2-chat-bison">PaLM 2 Chat</option>
+                                <option value="google/gemini-pro">Gemini Pro</option>
+                                <option value="meta-llama/llama-2-70b-chat">Llama 2 70B Chat</option>
+                            </select>
+                            <input type="text" id="custom-model" placeholder="Or enter a custom model name">
+                        </div>
+                        <button id="save-model-btn">Save Model</button>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h2>Add New Note</h2>
+                        <form id="note-form">
+                            <select id="notebook-select" required>
+                                <option value="">Select a notebook</option>
+                            </select>
+                            <input type="text" id="note-title" placeholder="Note Title" required>
+                            <textarea id="note-content" placeholder="Note Content" required></textarea>
+                            <button type="submit">Add Note</button>
+                        </form>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h2>Generate Note with AI</h2>
+                        <form id="ai-form">
+                            <select id="ai-notebook-select" required>
+                                <option value="">Select a notebook</option>
+                            </select>
+                            <input type="text" id="ai-prompt" placeholder="Enter a topic or question" required>
+                            <button type="submit" id="ai-submit-btn">Generate Note</button>
+                            <div id="ai-loading" class="loading" style="display: none;">Generating...</div>
+                        </form>
+                    </div>
                 </div>
-                <button id="save-model-btn">Save Model</button>
-            </section>
-            <section class="note-form-section">
-                <h2>Add New Note</h2>
-                <form id="note-form">
-                    <select id="notebook-select" required>
-                        <option value="">Select a notebook</option>
-                    </select>
-                    <input type="text" id="note-title" placeholder="Note Title" required>
-                    <textarea id="note-content" placeholder="Note Content" required></textarea>
-                    <button type="submit">Add Note</button>
-                </form>
-            </section>
-            <section class="ai-section">
-                <h2>Generate Note with AI</h2>
-                <form id="ai-form">
-                    <select id="ai-notebook-select" required>
-                        <option value="">Select a notebook</option>
-                    </select>
-                    <input type="text" id="ai-prompt" placeholder="Enter a topic or question" required>
-                    <button type="submit" id="ai-submit-btn">Generate Note</button>
-                    <div id="ai-loading" class="loading" style="display: none;">Generating...</div>
-                </form>
-            </section>
-            <section class="notes-section">
-                <h2>Your Notes</h2>
-                <select id="filter-notebook-select">
-                    <option value="">All Notebooks</option>
-                </select>
-                <div id="notes-container"></div>
             </section>
         </main>
         <script src="script.js"></script>
