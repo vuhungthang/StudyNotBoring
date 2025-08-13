@@ -28,6 +28,25 @@
                 </form>
                 <button id="hide-api-key-form" style="display: none;">Hide API Key Form</button>
             </section>
+            <section class="model-section" id="model-section">
+                <h2>AI Model Selection</h2>
+                <div class="model-controls">
+                    <select id="model-select">
+                        <option value="openrouter/auto">Auto Select (Recommended)</option>
+                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="openai/gpt-4">GPT-4</option>
+                        <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="anthropic/claude-2">Claude 2</option>
+                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                        <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+                        <option value="google/palm-2-chat-bison">PaLM 2 Chat</option>
+                        <option value="google/gemini-pro">Gemini Pro</option>
+                        <option value="meta-llama/llama-2-70b-chat">Llama 2 70B Chat</option>
+                    </select>
+                    <input type="text" id="custom-model" placeholder="Or enter a custom model name">
+                </div>
+                <button id="save-model-btn">Save Model</button>
+            </section>
             <section class="note-form-section">
                 <h2>Add New Note</h2>
                 <form id="note-form">

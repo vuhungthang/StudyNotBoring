@@ -27,7 +27,7 @@ h1 {
     color: #444;
 }
 
-.notebook-section, .api-key-section, .note-form-section, .ai-section, .notes-section {
+.notebook-section, .api-key-section, .model-section, .note-form-section, .ai-section, .notes-section {
     background: #fff;
     padding: 20px;
     margin-bottom: 20px;
@@ -88,6 +88,36 @@ h1 {
 
 .notebook button:hover {
     background-color: #c9302c;
+}
+
+.model-controls {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.model-controls select, .model-controls input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.model-controls input {
+    flex: 2;
+}
+
+#save-model-btn {
+    background-color: #5cb85c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#save-model-btn:hover {
+    background-color: #4cae4c;
 }
 
 #api-key-form input, #note-form input, #note-form textarea, #ai-form input, select {

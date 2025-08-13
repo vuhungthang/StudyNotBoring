@@ -4,9 +4,17 @@
 let notebooks = JSON.parse(localStorage.getItem('notebooks')) || {};
 let currentNotebook = null;
 
+// Default AI model
+let selectedModel = localStorage.getItem('selectedModel') || 'openrouter/auto';
+
 // Function to save notebooks to local storage
 function saveNotebooksToLocalStorage() {
     localStorage.setItem('notebooks', JSON.stringify(notebooks));
+}
+
+// Function to save selected model to local storage
+function saveSelectedModelToLocalStorage(model) {
+    localStorage.setItem('selectedModel', model);
 }
 
 // Function to create a new notebook
@@ -71,7 +79,7 @@ function renderNotebooks() {
         notebookElement.classList.add('notebook');
         notebookElement.innerHTML = `
             <h3>${notebookName}</h3>
-            <button onclick=\"deleteNotebook('${notebookName}')\">Delete</button>
+            <button onclick="deleteNotebook('${notebookName}')">Delete</button>
         `;
         notebooksContainer.appendChild(notebookElement);
     }
@@ -129,9 +137,9 @@ function renderNotes() {
         noteElement.classList.add('note');
         noteElement.innerHTML = `
             <h3>${note.title}</h3>
-            <div class=\"note-meta\">Created: ${note.timestamp}</div>
-            <div class=\"note-content\">${note.content}</div>
-            <button onclick=\"deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})\">Delete</button>
+            <div class="note-meta">Created: ${note.timestamp}</div>
+            <div class="note-content">${note.content}</div>
+            <button onclick="deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})">Delete</button>
         `;
         notesContainer.appendChild(noteElement);
     });
@@ -180,7 +188,7 @@ function formatAIContent(content) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         // Convert markdown-style code blocks
-        .replace(/```([\\s\\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
         // Convert inline code
         .replace(/`(.*?)`/g, '<code>$1</code>')
         // Convert markdown-style lists
@@ -198,7 +206,7 @@ function formatAIContent(content) {
         .replace(/<\/ul><ul>/g, '');
     
     // Wrap content in a div for styling
-    return `<div class=\"ai-content\">${formattedContent}</div>`;
+    return `<div class="ai-content">${formattedContent}</div>`;
 }
 
 // Event listener for creating a new notebook
@@ -208,7 +216,7 @@ document.getElementById('create-notebook-btn').addEventListener('click', functio
     
     if (notebookName && createNotebook(notebookName)) {
         notebookNameInput.value = '';
-        alert(`Notebook \"${notebookName}\" created successfully!`);
+        alert(`Notebook "${notebookName}" created successfully!`);
     } else if (!notebookName) {
         alert('Please enter a notebook name.');
     } else {
@@ -234,6 +242,23 @@ document.getElementById('hide-api-key-form').addEventListener('click', function(
     e.preventDefault();
     showApiKeyForm();
     document.getElementById('hide-api-key-form').style.display = 'none';
+});
+
+// Event listener for model selection
+document.getElementById('save-model-btn').addEventListener('click', function() {
+    const modelSelect = document.getElementById('model-select');
+    const customModelInput = document.getElementById('custom-model');
+    
+    let model = modelSelect.value;
+    
+    // If custom model is provided, use it instead
+    if (customModelInput.value.trim()) {
+        model = customModelInput.value.trim();
+    }
+    
+    selectedModel = model;
+    saveSelectedModelToLocalStorage(model);
+    alert(`Model "${model}" selected successfully!`);
 });
 
 // Event listener for note form submission
@@ -277,7 +302,7 @@ document.getElementById('ai-form').addEventListener('submit', async function(e) 
     document.getElementById('ai-loading').style.display = 'block';
     
     try {
-        const aiNote = await generateNoteWithAI(prompt, apiKey);
+        const aiNote = await generateNoteWithAI(prompt, apiKey, selectedModel);
         const formattedContent = formatAIContent(aiNote);
         addNote(notebookName, `AI: ${prompt}`, formattedContent);
     } catch (error) {
@@ -295,7 +320,7 @@ document.getElementById('ai-form').addEventListener('submit', async function(e) 
 // Event listener for filter notebook select
 document.getElementById('filter-notebook-select').addEventListener('change', renderNotes);
 
-// Load notebooks and API key when the page loads
+// Load notebooks, API key, and selected model when the page loads
 window.addEventListener('DOMContentLoaded', function() {
     renderNotebooks();
     updateNotebookSelects();
@@ -306,10 +331,19 @@ window.addEventListener('DOMContentLoaded', function() {
         hideApiKeyForm();
         document.getElementById('hide-api-key-form').style.display = 'block';
     }
+    
+    // Set the selected model in the dropdown
+    const modelSelect = document.getElementById('model-select');
+    modelSelect.value = selectedModel;
+    
+    // If the selected model is not in the dropdown, set it as custom
+    if (![...modelSelect.options].map(option => option.value).includes(selectedModel)) {
+        document.getElementById('custom-model').value = selectedModel;
+    }
 });
 
 // AI integration with OpenRouter
-async function generateNoteWithAI(prompt, apiKey) {
+async function generateNoteWithAI(prompt, apiKey, model) {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -317,7 +351,7 @@ async function generateNoteWithAI(prompt, apiKey) {
             'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-            model: "openrouter/auto", // Using auto model selection
+            model: model,
             messages: [
                 { role: "user", content: prompt }
             ]
