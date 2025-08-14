@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Generator - StudyNotBoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+          --background: 0 0% 100%;
+          --foreground: 222.2 84% 4.9%;
+          --card: 0 0% 100%;
+          --card-foreground: 222.2 84% 4.9%;
+          --popover: 0 0% 100%;
+          --popover-foreground: 222.2 84% 4.9%;
+          --primary: 221.2 83.2% 53.3%;
+          --primary-foreground: 210 40% 98%;
+          --secondary: 210 40% 96.1%;
+          --secondary-foreground: 222.2 47.4% 11.2%;
+          --muted: 210 40% 96.1%;
+          --muted-foreground: 215.4 16.3% 46.9%;
+          --accent: 210 40% 96.1%;
+          --accent-foreground: 222.2 47.4% 11.2%;
+          --destructive: 0 84.2% 60.2%;
+          --destructive-foreground: 210 40% 98%;
+          --border: 214.3 31.8% 91.4%;
+          --input: 214.3 31.8% 91.4%;
+          --ring: 221.2 83.2% 53.3%;
+          --radius: 0.5rem;
+        }
+        
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* shadcn-inspired components */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+        }
+        
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+        
+        .btn-primary:hover {
+            background-color: hsl(var(--primary) / 0.9);
+        }
+        
+        .btn-secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+        
+        .btn-secondary:hover {
+            background-color: hsl(var(--secondary) / 0.8);
+        }
+        
+        .btn-destructive {
+            background-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+        
+        .btn-destructive:hover {
+            background-color: hsl(var(--destructive) / 0.9);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground));
+        }
+        
+        .btn-outline:hover {
+            background-color: hsl(var(--accent));
+            color: hsl(var(--accent-foreground));
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Podcast Studio</h1>
+            <p class="text-lg text-muted-foreground">Transform your notes into engaging audio conversations</p>
+        </header>
+        
+        <main>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Content -->
+                <div class="lg:col-span-2">
+                    <div class="card mb-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold">Generate from Note</h2>
+                            <div class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                AI-Powered
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Select a Note</label>
+                                <select id="note-select" class="form-select">
+                                    <option value="">Select a note to convert</option>
+                                    <option value="note1">Physics - Quantum Mechanics</option>
+                                    <option value="note2">History - World War II</option>
+                                    <option value="note3">Literature - Shakespeare</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Podcast Title</label>
+                                <input type="text" id="podcast-title" placeholder="Enter a title for your podcast" class="form-input">
+                            </div>
+                            
+                            <div class="settings-section">
+                                <div class="settings-section-header">
+                                    <h3 class="settings-section-title">Advanced Settings</h3>
+                                    <button id="toggle-settings" class="toggle-settings-btn">
+                                        Expand
+                                    </button>
+                                </div>
+                                
+                                <div id="advanced-settings" class="settings-content hidden">
+                                    <div class="voice-setting-row">
+                                        <div class="voice-setting-group">
+                                            <label class="voice-setting-label">Speaker 1 Voice</label>
+                                            <select id="speaker1-voice" class="voice-setting-select">
+                                                <option value="Kore">Kore (Firm)</option>
+                                                <option value="Puck">Puck (Upbeat)</option>
+                                                <option value="Charon">Charon (Informative)</option>
+                                                <option value="Zephyr">Zephyr (Bright)</option>
+                                            </select>
+                                            <p class="text-xs text-muted-foreground mt-1">Select the voice for the first speaker</p>
+                                        </div>
+                                        
+                                        <div class="voice-setting-group">
+                                            <label class="voice-setting-label">Speaker 2 Voice</label>
+                                            <select id="speaker2-voice" class="voice-setting-select">
+                                                <option value="Puck">Puck (Upbeat)</option>
+                                                <option value="Kore">Kore (Firm)</option>
+                                                <option value="Charon">Charon (Informative)</option>
+                                                <option value="Zephyr">Zephyr (Bright)</option>
+                                            </select>
+                                            <p class="text-xs text-muted-foreground mt-1">Select the voice for the second speaker</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-secondary/50 rounded-lg p-3 mt-4">
+                                        <p class="text-xs text-muted-foreground">
+                                            <strong>Tip:</strong> Choose voices with different characteristics to create a more engaging conversation.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button id="generate-from-note-btn" class="btn btn-primary w-full py-3">
+                                Generate Podcast
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="text-2xl font-bold mb-6">Recent Podcasts</h2>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 border rounded-lg">
+                                <div>
+                                    <h3 class="font-medium">Quantum Mechanics Explained</h3>
+                                    <p class="text-sm text-muted-foreground">Generated 2 hours ago</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="btn btn-outline p-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                    </button>
+                                    <button class="btn btn-outline p-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-4 border rounded-lg">
+                                <div>
+                                    <h3 class="font-medium">World War II Overview</h3>
+                                    <p class="text-sm text-muted-foreground">Generated yesterday</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="btn btn-outline p-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                    </button>
+                                    <button class="btn btn-outline p-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div>
+                    <div class="card mb-8">
+                        <h2 class="text-xl font-bold mb-4">How It Works</h2>
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    1
+                                </div>
+                                <p class="text-sm">Select a note from your notebook to convert into a podcast</p>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    2
+                                </div>
+                                <p class="text-sm">Our AI transforms your notes into a natural conversation</p>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    3
+                                </div>
+                                <p class="text-sm">Choose voices and generate your audio podcast</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="text-xl font-bold mb-4">Tips for Best Results</h2>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mr-2 mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Use detailed, well-structured notes for better conversion</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mr-2 mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Focus on one main topic per podcast for clarity</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mr-2 mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Experiment with different voice combinations</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status and Player -->
+            <div class="mt-8">
+                <div id="podcast-status" class="status hidden"></div>
+                <div id="podcast-player" class="card hidden">
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold mb-2">Your Podcast is Ready</h3>
+                        <p class="text-muted-foreground mb-6">Listen or download your generated podcast</p>
+                        
+                        <div class="bg-secondary/50 rounded-lg p-6 mb-6">
+                            <audio id="podcast-audio" controls class="w-full mb-4"></audio>
+                            <div class="flex justify-center space-x-4">
+                                <button id="play-btn" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                    Play
+                                </button>
+                                <button id="download-podcast-btn" class="btn btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle advanced settings
+        document.getElementById('toggle-settings').addEventListener('click', function() {
+            const settings = document.getElementById('advanced-settings');
+            const isVisible = settings.classList.contains('hidden');
+            
+            if (isVisible) {
+                settings.classList.remove('hidden');
+                this.textContent = 'Collapse';
+            } else {
+                settings.classList.add('hidden');
+                this.textContent = 'Expand';
+            }
+        });
+        
+        // Generate podcast button
+        document.getElementById('generate-from-note-btn').addEventListener('click', function() {
+            const statusEl = document.getElementById('podcast-status');
+            const playerEl = document.getElementById('podcast-player');
+            
+            // Show status
+            statusEl.textContent = 'Generating your podcast... This may take a moment.';
+            statusEl.className = 'status';
+            statusEl.classList.remove('hidden');
+            
+            // Hide player
+            playerEl.classList.add('hidden');
+            
+            // Simulate generation process
+            setTimeout(() => {
+                statusEl.textContent = 'Podcast generated successfully!';
+                statusEl.className = 'status success';
+                
+                // Show player after a short delay
+                setTimeout(() => {
+                    playerEl.classList.remove('hidden');
+                }, 1000);
+            }, 3000);
+        });
+        
+        // Download button
+        document.getElementById('download-podcast-btn').addEventListener('click', function() {
+            alert('Podcast downloaded!');
+        });
+    </script>
+</body>
+</html>
