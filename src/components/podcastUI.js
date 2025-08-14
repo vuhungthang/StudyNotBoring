@@ -1,5 +1,5 @@
 // podcastUI.js
-import { generatePodcast, generatePodcastConversation, parsePodcastConversation } from './podcastGenerator.js';
+import { generatePodcast, generatePodcastConversation, parsePodcastConversation } from '../components/podcastGenerator.js';
 
 class PodcastUI {
   constructor() {

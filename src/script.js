@@ -1,7 +1,7 @@
 // script.js
-import InfographicGenerator from './infographicGenerator.js';
-import { getSynthesizedAudio, saveAudioAsWav, controlWebSpeechPlayback } from './voice.js';
-import PodcastUI from './podcastUI.js';
+import InfographicGenerator from './utils/infographicGenerator.js';
+import { getSynthesizedAudio, saveAudioAsWav, controlWebSpeechPlayback } from './lib/voice.js';
+import PodcastUI from './components/podcastUI.js';
 
 // Function to convert PCM data to WAV format
 function convertPcmToWav(pcmBase64, sampleRate = 24000, channels = 1, bitDepth = 16) {
