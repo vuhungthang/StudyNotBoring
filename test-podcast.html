@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Generator Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .podcast-player {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #podcast-audio {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Podcast Generator Test</h1>
+        
+        <div class="form-group">
+            <label for="note-content">Sample Note Content:</label>
+            <textarea id="note-content">Artificial Intelligence is transforming the world in unprecedented ways. From healthcare to transportation, AI is revolutionizing industries by automating processes, improving accuracy, and enabling new capabilities. In healthcare, AI assists doctors in diagnosing diseases more accurately and quickly than ever before. In transportation, self-driving cars promise to reduce accidents and improve traffic flow. AI is also enhancing customer service through intelligent chatbots that can understand and respond to complex queries. Despite these benefits, AI also raises important ethical questions about privacy, job displacement, and decision-making transparency. As we continue to develop AI technologies, it's crucial to address these challenges responsibly to ensure AI benefits all of humanity.</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="podcast-title">Podcast Title:</label>
+            <input type="text" id="podcast-title" value="The Future of Artificial Intelligence" />
+        </div>
+        
+        <button id="generate-btn">Generate Podcast from Note</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div id="podcast-player" class="podcast-player" style="display: none;">
+            <audio id="podcast-audio" controls></audio>
+            <button id="download-btn">Download Podcast</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { generatePodcast } from './podcastGenerator.js';
+        
+        document.getElementById('generate-btn').addEventListener('click', async function() {
+            const noteContent = document.getElementById('note-content').value;
+            const podcastTitle = document.getElementById('podcast-title').value;
+            const statusEl = document.getElementById('status');
+            const playerEl = document.getElementById('podcast-player');
+            const audioEl = document.getElementById('podcast-audio');
+            
+            // Show status
+            statusEl.textContent = 'Generating podcast...';
+            statusEl.className = 'status';
+            statusEl.style.display = 'block';
+            playerEl.style.display = 'none';
+            
+            try {
+                // Convert note content to conversation
+                const conversation = await convertNoteToConversation(noteContent, podcastTitle);
+                
+                // Configure speakers
+                const speakerConfig = {
+                    'Speaker 1': 'Kore',
+                    'Speaker 2': 'Puck'
+                };
+                
+                // Generate podcast
+                const wavBlob = await generatePodcast(conversation, 'podcast.wav', speakerConfig);
+                
+                // Update audio player
+                const audioUrl = URL.createObjectURL(wavBlob);
+                audioEl.src = audioUrl;
+                
+                // Show player
+                playerEl.style.display = 'block';
+                statusEl.textContent = `Podcast "${podcastTitle}" generated successfully!`;
+                statusEl.className = 'status success';
+                
+                // Store for download
+                window.currentPodcastBlob = wavBlob;
+                window.currentPodcastName = `${podcastTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_podcast.wav`;
+            } catch (error) {
+                console.error('Error generating podcast:', error);
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        });
+        
+        document.getElementById('download-btn').addEventListener('click', function() {
+            if (!window.currentPodcastBlob) {
+                alert('No podcast to download. Please generate a podcast first.');
+                return;
+            }
+            
+            // Create download link
+            const url = URL.createObjectURL(window.currentPodcastBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = window.currentPodcastName || 'podcast.wav';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        });
+        
+        // Function to convert note content to conversation
+        async function convertNoteToConversation(noteContent, podcastTitle) {
+            // Split the note content into sections or paragraphs
+            const paragraphs = noteContent.split('\n\n').filter(p => p.trim() !== '');
+            
+            // If we have very short content, treat it as a single point
+            if (paragraphs.length <= 1) {
+                return [
+                    { speaker: 'Speaker 1', text: `Hey there! Welcome to our podcast. Today we're diving into "${podcastTitle}".` },
+                    { speaker: 'Speaker 2', text: `I can't wait to learn about this! What's the first thing we should know?` },
+                    { speaker: 'Speaker 1', text: `Well, here's the fascinating part - ${noteContent}` },
+                    { speaker: 'Speaker 2', text: `Wow, that's really interesting! Can you break that down for me a bit more?` },
+                    { speaker: 'Speaker 1', text: `Absolutely! What makes this so compelling is how it connects to...` },
+                    { speaker: 'Speaker 2', text: `I never thought of it that way. This is really eye-opening!` }
+                ];
+            }
+            
+            // Create a more conversational flow with questions, reactions, and natural dialogue
+            const conversation = [];
+            
+            // Engaging introduction
+            conversation.push({ speaker: 'Speaker 1', text: `You're listening to our podcast! I'm your host, and today we're exploring "${podcastTitle}".` });
+            conversation.push({ speaker: 'Speaker 2', text: `And I'm your co-host! I have to admit, I'm really curious about this topic. What's the big deal?` });
+            
+            // Process each paragraph into a more conversational format
+            for (let i = 0; i < Math.min(paragraphs.length, 5); i++) {
+                const currentSpeaker = i % 2 === 0 ? 'Speaker 1' : 'Speaker 2';
+                const otherSpeaker = currentSpeaker === 'Speaker 1' ? 'Speaker 2' : 'Speaker 1';
+                
+                // First point with more engagement
+                if (i === 0) {
+                    conversation.push({ 
+                        speaker: currentSpeaker, 
+                        text: `Let's kick things off with a key insight. Get this - ${paragraphs[i]}` 
+                    });
+                    conversation.push({ 
+                        speaker: otherSpeaker, 
+                        text: `Whoa, that's surprising! Why is that the case?` 
+                    });
+                    conversation.push({ 
+                        speaker: currentSpeaker, 
+                        text: `Great question! It all comes down to how...` 
+                    });
+                } else {
+                    // Subsequent points with transition
+                    conversation.push({ 
+                        speaker: otherSpeaker, 
+                        text: `That makes so much sense. What else should we know about this?` 
+                    });
+                    conversation.push({ 
+                        speaker: currentSpeaker, 
+                        text: `Oh, here's where it gets even more interesting. Check this out - ${paragraphs[i]}` 
+                    });
+                    
+                    // Add reactions based on content
+                    if (paragraphs[i].includes('important') || paragraphs[i].includes('key') || paragraphs[i].includes('crucial')) {
+                        conversation.push({ 
+                            speaker: otherSpeaker, 
+                            text: `That's a game-changer! How does that impact us?` 
+                        });
+                    } else if (paragraphs[i].includes('problem') || paragraphs[i].includes('issue') || paragraphs[i].includes('challenge')) {
+                        conversation.push({ 
+                            speaker: otherSpeaker, 
+                            text: `That sounds like a real challenge. How do people typically handle this?` 
+                        });
+                    } else {
+                        conversation.push({ 
+                            speaker: otherSpeaker, 
+                            text: `I never knew that! What's the significance of this point?` 
+                        });
+                    }
+                    
+                    conversation.push({ 
+                        speaker: currentSpeaker, 
+                        text: `Well, think of it this way...` 
+                    });
+                }
+            }
+            
+            // Engaging conclusion
+            conversation.push({ 
+                speaker: 'Speaker 2', 
+                text: `This has been such an enlightening discussion. Let's wrap up with the most important takeaway.` 
+            });
+            conversation.push({ 
+                speaker: 'Speaker 1', 
+                text: `Absolutely. If there's one thing you remember from today, let it be this...` 
+            });
+            conversation.push({ 
+                speaker: 'Speaker 2', 
+                text: `Thanks for tuning in! Don't forget to subscribe for more fascinating topics like this one.` 
+            });
+            
+            return conversation;
+        }
+    </script>
+</body>
+</html>

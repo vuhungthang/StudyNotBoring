@@ -1,6 +1,7 @@
 // script.js
 import InfographicGenerator from './infographicGenerator.js';
 import { getSynthesizedAudio, saveAudioAsWav, controlWebSpeechPlayback } from './voice.js';
+import PodcastUI from './podcastUI.js';
 
 // Function to convert PCM data to WAV format
 function convertPcmToWav(pcmBase64, sampleRate = 24000, channels = 1, bitDepth = 16) {
@@ -108,6 +109,9 @@ function deleteNotebook(name) {
     return false;
 }
 
+// Make the function globally accessible for onclick handlers
+window.deleteNotebook = deleteNotebook;
+
 // Function to add a new note
 function addNote(notebookName, title, content) {
     if (!notebooks[notebookName]) {
@@ -123,17 +127,40 @@ function addNote(notebookName, title, content) {
     
     notebooks[notebookName].push(note);
     saveNotebooksToLocalStorage();
+    renderNotebooks(); // Update notebooks view as well
     renderNotes();
 }
 
 // Function to delete a note
 function deleteNote(notebookName, noteId) {
+    console.log('Deleting note:', notebookName, noteId);
     if (notebooks[notebookName]) {
         notebooks[notebookName] = notebooks[notebookName].filter(note => note.id !== noteId);
         saveNotebooksToLocalStorage();
+        renderNotebooks(); // Update notebooks view as well
         renderNotes();
+    } else {
+        // If notebookName is not provided or invalid, try to find the note in any notebook
+        let found = false;
+        for (const nbName in notebooks) {
+            const filteredNotes = notebooks[nbName].filter(note => note.id !== noteId);
+            if (filteredNotes.length !== notebooks[nbName].length) {
+                // Note was found and removed
+                notebooks[nbName] = filteredNotes;
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            saveNotebooksToLocalStorage();
+            renderNotebooks(); // Update notebooks view as well
+            renderNotes();
+        }
     }
 }
+
+// Make the function globally accessible for onclick handlers
+window.deleteNote = deleteNote;
 
 // Function to render notebooks
 function renderNotebooks() {
@@ -279,12 +306,14 @@ function renderNotes() {
     notesToDisplay.forEach(note => {
         const noteElement = document.createElement('div');
         noteElement.classList.add('note');
+        // Determine the notebook name for this note
+        const notebookName = selectedNotebook || getNotebookForNote(note.id) || '';
         noteElement.innerHTML = `
             <h3>${note.title}</h3>
             <div class="note-meta">Created: ${note.timestamp}</div>
             <div class="note-content">${note.content}</div>
             <div class="note-actions">
-                <button class="delete-btn" onclick="deleteNote('${selectedNotebook || getNotebookForNote(note.id)}', ${note.id})">Delete</button>
+                <button class="delete-btn" onclick="deleteNote('${notebookName}', ${note.id})">Delete</button>
                 <button class="infographic-btn" data-note-id="${note.id}">Create Infographic</button>
                 <button class="listen-btn" data-note-id="${note.id}">Listen</button>
                 <button class="stop-btn" data-note-id="${note.id}" style="display: none;">Stop</button>
@@ -656,7 +685,7 @@ function setupStopButtonEventListeners() {
 // Helper function to find which notebook a note belongs to
 function getNotebookForNote(noteId) {
     for (const notebookName in notebooks) {
-        if (notebooks[notebookName].some(note => note.id === noteId)) {
+        if (notebooks[notebookName] && notebooks[notebookName].some(note => note.id === noteId)) {
             return notebookName;
         }
     }
@@ -902,6 +931,10 @@ window.addEventListener('DOMContentLoaded', function() {
     if (savedGeminiApiKey) {
         document.getElementById('gemini-api-key').value = savedGeminiApiKey;
     }
+    
+    // Initialize podcast UI
+    const podcastUI = new PodcastUI();
+    podcastUI.init('podcast-container');
 });
 
 // AI integration with OpenRouter

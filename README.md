@@ -8,6 +8,7 @@ A web-based application for organizing notes into notebooks with AI-powered feat
 - **AI-Powered Note Generation**: Create notes automatically on any topic
 - **Infographic Creation**: Transform your notes into visual infographics
 - **Text-to-Speech**: Listen to your notes being read aloud
+- **Podcast Generation**: Convert your notes into engaging podcast conversations
 - **API Integration**: Works with OpenRouter and Gemini APIs
 
 ## Getting Started
@@ -60,6 +61,19 @@ To use the text-to-speech functionality, you'll need to set up a Google Generati
 2. Click "Download Audio" on that note
 3. The note will be converted to speech and downloaded as a WAV file
 4. You'll need to set your Gemini API key in Settings for this feature to work
+
+### Creating Podcasts
+1. Go to the Podcast tab
+2. To create a podcast from a note:
+   - Select a note from the dropdown
+   - Enter a podcast title (optional)
+   - Click "Generate Podcast from Note"
+3. To create a podcast manually:
+   - Enter speaker names and select voices
+   - Write a conversation in the text area
+   - Click "Generate Podcast"
+4. Listen to your podcast using the player
+5. Download your podcast as a WAV file
 
 ## Technical Details
 

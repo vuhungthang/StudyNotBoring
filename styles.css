@@ -494,3 +494,123 @@ h1 {
     min-width: 60px;
     text-align: center;
 }
+
+/* Podcast UI Styles */
+.podcast-generator {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.podcast-generator h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #444;
+    text-align: center;
+}
+
+.podcast-generator .settings-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 5px solid #5bc0de;
+}
+
+.podcast-generator .settings-card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+
+#generate-podcast-btn,
+#generate-from-note-btn {
+    background-color: #5cb85c;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#generate-podcast-btn:hover,
+#generate-from-note-btn:hover {
+    background-color: #4cae4c;
+}
+
+.status {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.status.error {
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
+}
+
+.status.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+}
+
+.podcast-player {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.podcast-player audio {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+#download-podcast-btn {
+    background-color: #5bc0de;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#download-podcast-btn:hover {
+    background-color: #46b8da;
+}
