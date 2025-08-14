@@ -10,6 +10,7 @@ A web-based application for organizing notes into notebooks with AI-powered feat
 - **Text-to-Speech**: Listen to your notes being read aloud
 - **Podcast Generation**: Convert your notes into engaging podcast conversations
 - **API Integration**: Works with OpenRouter and Gemini APIs
+- **Shadcn/UI Components**: Modern, accessible UI components for a better user experience
 
 ## Getting Started
 
@@ -75,11 +76,28 @@ To use the text-to-speech functionality, you'll need to set up a Google Generati
 4. Listen to your podcast using the player
 5. Download your podcast as a WAV file
 
+## UI Components
+
+This project now includes a set of reusable UI components inspired by [shadcn/ui](https://ui.shadcn.com/):
+
+- **Button**: Primary, secondary, destructive, and outline variants
+- **Card**: Content container with header, content, and footer sections
+- **Input**: Styled text input fields
+- **Select**: Styled dropdown select elements
+- **Textarea**: Styled multi-line text input
+- **Badge**: Small status indicators with multiple variants
+- **Alert**: Contextual messages with titles and descriptions
+- **Dialog**: Modal dialogs for important actions or information
+
+You can view a demo of these components in `test-components.html`.
+
 ## Technical Details
 
 - All data is stored locally in your browser's localStorage
 - No server required - works completely offline after initial setup
 - Built with vanilla JavaScript, HTML, and CSS
+- Uses Tailwind CSS for styling with a custom color palette
+- UI components are built with accessibility in mind
 
 ## Documentation
 

@@ -97,7 +97,10 @@ function createNotebook(name) {
 // Function to delete a notebook
 function deleteNotebook(name) {
     if (notebooks[name]) {
-        if (confirm(`Are you sure you want to delete the notebook "${name}" and all its notes?`)) {
+        const noteCount = notebooks[name].length;
+        const message = `Are you sure you want to delete the notebook "${name}" and all its ${noteCount} note${noteCount !== 1 ? 's' : ''}? This action cannot be undone.`;
+        
+        if (confirm(message)) {
             delete notebooks[name];
             saveNotebooksToLocalStorage();
             renderNotebooks();
@@ -165,48 +168,155 @@ window.deleteNote = deleteNote;
 // Function to render notebooks
 function renderNotebooks() {
     const notebooksContainer = document.getElementById('notebooks-container');
+    const statsElement = document.getElementById('notebooks-stats');
     notebooksContainer.innerHTML = '';
     
-    for (const notebookName in notebooks) {
+    // Get search and sort values
+    const searchValue = document.getElementById('search-notebooks')?.value.toLowerCase() || '';
+    const sortValue = document.getElementById('sort-notebooks')?.value || 'name';
+    
+    // Convert notebooks to array for sorting
+    let notebooksArray = Object.entries(notebooks).map(([name, notes]) => ({
+        name,
+        notes,
+        noteCount: notes.length,
+        lastModified: notes.length > 0 ? new Date(Math.max(...notes.map(note => new Date(note.timestamp)))) : new Date(0)
+    }));
+    
+    // Filter notebooks based on search
+    if (searchValue) {
+        notebooksArray = notebooksArray.filter(nb => 
+            nb.name.toLowerCase().includes(searchValue) || 
+            nb.notes.some(note => 
+                note.title.toLowerCase().includes(searchValue) || 
+                note.content.toLowerCase().includes(searchValue)
+            )
+        );
+    }
+    
+    // Sort notebooks
+    switch (sortValue) {
+        case 'name':
+            notebooksArray.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+        case 'date':
+            notebooksArray.sort((a, b) => b.lastModified - a.lastModified);
+            break;
+        case 'count':
+            notebooksArray.sort((a, b) => b.noteCount - a.noteCount);
+            break;
+    }
+    
+    // Update stats
+    const totalNotebooks = notebooksArray.length;
+    const totalNotes = notebooksArray.reduce((sum, nb) => sum + nb.noteCount, 0);
+    statsElement.textContent = `${totalNotebooks} notebook${totalNotebooks !== 1 ? 's' : ''}, ${totalNotes} note${totalNotes !== 1 ? 's' : ''}`;
+    
+    // Render notebooks
+    if (notebooksArray.length === 0) {
+        notebooksContainer.innerHTML = '<p class="no-notes col-span-full text-center py-12">No notebooks found. Create your first notebook!</p>';
+        return;
+    }
+    
+    notebooksArray.forEach(({ name, notes, noteCount }) => {
         const notebookElement = document.createElement('div');
-        notebookElement.classList.add('notebook');
+        notebookElement.classList.add('notebook-simple-card');
         notebookElement.innerHTML = `
-            <h3>${notebookName}</h3>
-            <button onclick="deleteNotebook('${notebookName}')" class="delete-notebook-btn">Delete</button>
-            
-            <div class="notebook-note-forms">
-                <div class="settings-card">
-                    <h4>Add New Note</h4>
-                    <form class="note-form-inline" data-notebook="${notebookName}">
-                        <input type="text" class="note-title-inline" placeholder="Note Title" required>
-                        <textarea class="note-content-inline" placeholder="Note Content" required></textarea>
-                        <button type="submit">Add Note</button>
+            <div class="notebook-card-header">
+                <h3 class="notebook-card-title">${name}</h3>
+                <span class="notebook-card-count">${noteCount}</span>
+            </div>
+            <div class="notebook-card-actions">
+                <button class="btn btn-outline btn-sm toggle-forms-btn" data-notebook="${name}">Add Note</button>
+                <button class="delete-notebook-btn btn btn-destructive btn-sm" data-notebook="${name}">Delete</button>
+            </div>
+            <div class="notebook-forms-container" id="forms-${name}" style="display: none;">
+                <div class="form-section">
+                    <h4 class="form-section-title">Add New Note</h4>
+                    <form class="note-form-inline space-y-2" data-notebook="${name}">
+                        <input type="text" class="note-title-inline form-input text-sm" placeholder="Note Title" required>
+                        <textarea class="note-content-inline form-textarea text-sm" placeholder="Note Content" required rows="3"></textarea>
+                        <button type="submit" class="btn btn-primary w-full text-sm">Add Note</button>
                     </form>
                 </div>
                 
-                <div class="settings-card">
-                    <h4>Generate Note with AI</h4>
-                    <form class="ai-form-inline" data-notebook="${notebookName}">
-                        <input type="text" class="ai-prompt-inline" placeholder="Enter a topic or question" required>
-                        <button type="submit" class="ai-submit-btn-inline">Generate Note</button>
-                        <div class="ai-loading-inline" style="display: none;">Generating...</div>
+                <div class="form-section">
+                    <h4 class="form-section-title">Generate Note with AI</h4>
+                    <form class="ai-form-inline space-y-2" data-notebook="${name}">
+                        <input type="text" class="ai-prompt-inline form-input text-sm" placeholder="Enter a topic or question" required>
+                        <button type="submit" class="ai-submit-btn-inline btn btn-primary w-full text-sm">Generate Note</button>
+                        <div class="ai-loading-inline text-center py-2 text-muted-foreground text-sm" style="display: none;">Generating...</div>
                     </form>
                 </div>
             </div>
         `;
         notebooksContainer.appendChild(notebookElement);
-    }
+    });
+    
+    // Add click event to view notebook's notes (except on buttons and forms)
+    document.querySelectorAll('.notebook-simple-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Check if the click was on a button or inside a form
+            const isButton = e.target.closest('button');
+            const isForm = e.target.closest('form');
+            
+            // Only switch to notes tab if not clicking on buttons or forms
+            if (!isButton && !isForm) {
+                const notebookName = this.querySelector('.notebook-card-title').textContent;
+                // Set the filter to this notebook
+                document.getElementById('filter-notebook-select').value = notebookName;
+                // Switch to notes tab
+                document.querySelector('.nav-tab[data-tab="notes"]').click();
+                // Trigger the change event to update the notes display
+                document.getElementById('filter-notebook-select').dispatchEvent(new Event('change'));
+            }
+        });
+    });
+    
+    // Add event listeners for delete buttons
+    document.querySelectorAll('.delete-notebook-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const notebookName = this.getAttribute('data-notebook');
+            deleteNotebook(notebookName);
+        });
+    });
+    
+    // Add event listeners for toggle buttons
+    document.querySelectorAll('.toggle-forms-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const notebookName = this.getAttribute('data-notebook');
+            const formsContainer = document.getElementById(`forms-${notebookName}`);
+            const isVisible = formsContainer.style.display === 'block';
+            
+            // Hide all forms first
+            document.querySelectorAll('.notebook-forms-container').forEach(container => {
+                container.style.display = 'none';
+            });
+            
+            // Toggle the clicked form
+            formsContainer.style.display = isVisible ? 'none' : 'block';
+        });
+    });
     
     // Add event listeners for inline note forms
     document.querySelectorAll('.note-form-inline').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const notebookName = this.getAttribute('data-notebook');
             const title = this.querySelector('.note-title-inline').value;
             const content = this.querySelector('.note-content-inline').value;
             
             addNote(notebookName, title, content);
             this.reset();
+            
+            // Hide the forms after submission
+            const formsContainer = this.closest('.notebook-forms-container');
+            if (formsContainer) {
+                formsContainer.style.display = 'none';
+            }
         });
     });
     
@@ -214,6 +324,7 @@ function renderNotebooks() {
     document.querySelectorAll('.ai-form-inline').forEach(form => {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const notebookName = this.getAttribute('data-notebook');
             const prompt = this.querySelector('.ai-prompt-inline').value;
             const apiKey = loadApiKeyFromLocalStorage();
@@ -236,6 +347,12 @@ function renderNotebooks() {
                 const formattedContent = formatAIContent(aiNote);
                 addNote(notebookName, `AI: ${prompt}`, formattedContent);
                 this.reset();
+                
+                // Hide the forms after submission
+                const formsContainer = this.closest('.notebook-forms-container');
+                if (formsContainer) {
+                    formsContainer.style.display = 'none';
+                }
             } catch (error) {
                 console.error('Error generating note with AI:', error);
                 alert(`Failed to generate note with AI: ${error.message}`);
@@ -299,7 +416,7 @@ function renderNotes() {
     notesToDisplay.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
     if (notesToDisplay.length === 0) {
-        notesContainer.innerHTML = '<p class="no-notes">No notes found. Create your first note!</p>';
+        notesContainer.innerHTML = '<p class="no-notes col-span-full">No notes found. Create your first note!</p>';
         return;
     }
     
@@ -309,15 +426,16 @@ function renderNotes() {
         // Determine the notebook name for this note
         const notebookName = selectedNotebook || getNotebookForNote(note.id) || '';
         noteElement.innerHTML = `
-            <h3>${note.title}</h3>
-            <div class="note-meta">Created: ${note.timestamp}</div>
-            <div class="note-content">${note.content}</div>
-            <div class="note-actions">
-                <button class="delete-btn" onclick="deleteNote('${notebookName}', ${note.id})">Delete</button>
-                <button class="infographic-btn" data-note-id="${note.id}">Create Infographic</button>
-                <button class="listen-btn" data-note-id="${note.id}">Listen</button>
-                <button class="stop-btn" data-note-id="${note.id}" style="display: none;">Stop</button>
-                <button class="download-audio-btn" data-note-id="${note.id}">Download Audio</button>
+            <h3 class="text-xl font-semibold mb-2">${note.title}</h3>
+            <div class="note-meta mb-3 text-sm text-muted-foreground">Created: ${note.timestamp}</div>
+            <div class="note-content mb-4 note-content-collapsed">${note.content}</div>
+            <div class="note-actions flex flex-wrap gap-2 justify-end">
+                <button class="btn btn-outline toggle-note-btn" data-note-id="${note.id}">Expand</button>
+                <button class="btn btn-destructive" onclick="deleteNote('${notebookName}', ${note.id})">Delete</button>
+                <button class="btn btn-outline infographic-btn" data-note-id="${note.id}">Create Infographic</button>
+                <button class="btn btn-primary listen-btn" data-note-id="${note.id}">Listen</button>
+                <button class="btn btn-secondary stop-btn" data-note-id="${note.id}" style="display: none;">Stop</button>
+                <button class="btn btn-outline download-audio-btn" data-note-id="${note.id}">Download Audio</button>
             </div>
         `;
         notesContainer.appendChild(noteElement);
@@ -355,6 +473,24 @@ function renderNotes() {
                     this.textContent = 'Create Infographic';
                     this.disabled = false;
                 }
+            }
+        });
+    });
+    
+    // Add event listeners for toggle note buttons
+    document.querySelectorAll('.toggle-note-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const noteElement = this.closest('.note');
+            const contentElement = noteElement.querySelector('.note-content');
+            
+            if (contentElement.classList.contains('note-content-collapsed')) {
+                // Expand the note
+                contentElement.classList.remove('note-content-collapsed');
+                this.textContent = 'Collapse';
+            } else {
+                // Collapse the note
+                contentElement.classList.add('note-content-collapsed');
+                this.textContent = 'Expand';
             }
         });
     });
@@ -744,26 +880,100 @@ function loadApiKeyFromLocalStorage() {
     return localStorage.getItem('openrouter-api-key');
 }
 
-// Function to hide the API key form
+// Function to hide the API key form and show status
 function hideApiKeyForm() {
-    const apiKeySection = document.querySelector('#api-key-form').closest('.settings-card');
-    const form = document.getElementById('api-key-form');
-    form.style.display = 'none';
+    const openRouterForm = document.getElementById('api-key-form');
+    const geminiForm = document.getElementById('gemini-api-key-form');
+    const hideButton = document.getElementById('hide-api-key-form');
+    
+    // Check if we have saved API keys
+    const openRouterKey = localStorage.getItem('openrouter-api-key');
+    const geminiKey = localStorage.getItem('gemini-api-key');
+    
+    // Hide forms
+    if (openRouterForm) openRouterForm.style.display = 'none';
+    if (geminiForm) geminiForm.style.display = 'none';
+    
+    // Show status messages
+    showApiStatus();
     
     // Show the hide button
-    const hideButton = document.getElementById('hide-api-key-form');
-    hideButton.style.display = 'block';
+    if (hideButton) hideButton.style.display = 'block';
 }
 
-// Function to show the API key form
+// Function to show the API key form and hide status
 function showApiKeyForm() {
-    const apiKeySection = document.querySelector('#api-key-form').closest('.settings-card');
-    const form = document.getElementById('api-key-form');
-    form.style.display = 'block';
+    const openRouterForm = document.getElementById('api-key-form');
+    const geminiForm = document.getElementById('gemini-api-key-form');
+    const hideButton = document.getElementById('hide-api-key-form');
+    const openRouterStatus = document.getElementById('openrouter-api-status');
+    const geminiStatus = document.getElementById('gemini-api-status');
+    
+    // Show forms
+    if (openRouterForm) openRouterForm.style.display = 'block';
+    if (geminiForm) geminiForm.style.display = 'block';
+    
+    // Hide status messages
+    if (openRouterStatus) openRouterStatus.style.display = 'none';
+    if (geminiStatus) geminiStatus.style.display = 'none';
     
     // Hide the hide button
-    const hideButton = document.getElementById('hide-api-key-form');
-    hideButton.style.display = 'none';
+    if (hideButton) hideButton.style.display = 'none';
+}
+
+// Function to show API status messages
+function showApiStatus() {
+    const openRouterForm = document.getElementById('api-key-form');
+    const geminiForm = document.getElementById('gemini-api-key-form');
+    const openRouterKey = localStorage.getItem('openrouter-api-key');
+    const geminiKey = localStorage.getItem('gemini-api-key');
+    
+    // Create or update OpenRouter API status
+    let openRouterStatus = document.getElementById('openrouter-api-status');
+    if (!openRouterStatus) {
+        openRouterStatus = document.createElement('div');
+        openRouterStatus.id = 'openrouter-api-status';
+        openRouterStatus.className = 'api-status bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4';
+        openRouterStatus.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>OpenRouter API key is saved</span>
+            </div>
+            <button class="edit-api-btn mt-2 text-sm text-green-800 hover:text-green-900 underline" data-api="openrouter">Edit API Key</button>
+        `;
+        openRouterForm.parentNode.insertBefore(openRouterStatus, openRouterForm);
+    } else {
+        openRouterStatus.style.display = 'block';
+    }
+    
+    // Create or update Gemini API status
+    let geminiStatus = document.getElementById('gemini-api-status');
+    if (!geminiStatus) {
+        geminiStatus = document.createElement('div');
+        geminiStatus.id = 'gemini-api-status';
+        geminiStatus.className = 'api-status bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4';
+        geminiStatus.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Gemini API key is saved</span>
+            </div>
+            <button class="edit-api-btn mt-2 text-sm text-green-800 hover:text-green-900 underline" data-api="gemini">Edit API Key</button>
+        `;
+        geminiForm.parentNode.insertBefore(geminiStatus, geminiForm);
+    } else {
+        geminiStatus.style.display = 'block';
+    }
+    
+    // Add event listeners to edit buttons
+    document.querySelectorAll('.edit-api-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            showApiKeyForm();
+        });
+    });
 }
 
 // Function to format AI-generated content
@@ -825,6 +1035,11 @@ function setupTabNavigation() {
             const targetContent = document.getElementById(`${tabName}-section`);
             if (targetContent) {
                 targetContent.classList.add('active');
+                
+                // If switching to podcast tab, refresh the podcast UI
+                if (tabName === 'podcast' && typeof window.podcastUI !== 'undefined' && window.podcastUI.refresh) {
+                    window.podcastUI.refresh();
+                }
             }
         }
     });
@@ -847,6 +1062,10 @@ document.getElementById('create-notebook-btn').addEventListener('click', functio
         alert('A notebook with this name already exists.');
     }
 });
+
+// Event listeners for notebook search and sort
+document.getElementById('search-notebooks')?.addEventListener('input', renderNotebooks);
+document.getElementById('sort-notebooks')?.addEventListener('change', renderNotebooks);
 
 // Event listener for API key form submission
 document.getElementById('api-key-form').addEventListener('submit', function(e) {
@@ -893,8 +1112,58 @@ document.getElementById('save-model-btn').addEventListener('click', function() {
         infographicGenerator.selectedModel = model;
     }
     
+    // Show model status
+    showModelStatus(model);
+    
     alert(`Model "${model}" selected successfully!`);
 });
+
+// Function to show model status
+function showModelStatus(model) {
+    const modelControls = document.querySelector('.model-controls');
+    const saveModelBtn = document.getElementById('save-model-btn');
+    
+    // Create or update model status
+    let modelStatus = document.getElementById('model-status');
+    if (!modelStatus) {
+        modelStatus = document.createElement('div');
+        modelStatus.id = 'model-status';
+        modelStatus.className = 'model-status bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-4';
+        modelStatus.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Current model: <strong>${model}</strong></span>
+            </div>
+            <button class="edit-model-btn mt-2 text-sm text-blue-800 hover:text-blue-900 underline" data-model="${model}">Change Model</button>
+        `;
+        modelControls.parentNode.insertBefore(modelStatus, modelControls.nextSibling);
+    } else {
+        modelStatus.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>Current model: <strong>${model}</strong></span>
+            </div>
+            <button class="edit-model-btn mt-2 text-sm text-blue-800 hover:text-blue-900 underline" data-model="${model}">Change Model</button>
+        `;
+    }
+    
+    // Show model status and hide model controls and save button
+    modelStatus.style.display = 'block';
+    modelControls.style.display = 'none';
+    saveModelBtn.style.display = 'none';
+    
+    // Remove any existing event listeners to avoid duplicates
+    const newEditButton = modelStatus.querySelector('.edit-model-btn');
+    newEditButton.addEventListener('click', function() {
+        modelControls.style.display = 'block';
+        saveModelBtn.style.display = 'block';
+        modelStatus.style.display = 'none';
+    });
+}
 
 // Event listeners for note forms are now handled inline within each notebook
 // Event listeners for AI forms are now handled inline within each notebook
@@ -909,32 +1178,39 @@ window.addEventListener('DOMContentLoaded', function() {
     updateNotebookSelects();
     renderNotes();
     
-    const savedApiKey = loadApiKeyFromLocalStorage();
-    if (savedApiKey) {
+    const savedOpenRouterKey = loadApiKeyFromLocalStorage();
+    const savedGeminiKey = localStorage.getItem('gemini-api-key');
+    const savedModel = localStorage.getItem('selectedModel') || 'openrouter/auto';
+    
+    if (savedOpenRouterKey || savedGeminiKey) {
         hideApiKeyForm();
+    }
+    
+    // Show model status if a model is saved
+    if (savedModel) {
+        showModelStatus(savedModel);
     }
     
     // Set the selected model in the dropdown
     const modelSelect = document.getElementById('model-select');
-    modelSelect.value = selectedModel;
+    modelSelect.value = savedModel;
     
     // If the selected model is not in the dropdown, set it as custom
-    if ([...modelSelect.options].map(option => option.value).includes(selectedModel)) {
-        document.getElementById('custom-model').value = selectedModel;
+    if (![...modelSelect.options].map(option => option.value).includes(savedModel)) {
+        document.getElementById('custom-model').value = savedModel;
     }
     
     // Initialize infographic generator with current API key and model
     infographicGenerator = new InfographicGenerator();
     
     // Pre-fill Gemini API key if it exists
-    const savedGeminiApiKey = localStorage.getItem('gemini-api-key');
-    if (savedGeminiApiKey) {
-        document.getElementById('gemini-api-key').value = savedGeminiApiKey;
+    if (savedGeminiKey) {
+        document.getElementById('gemini-api-key').value = savedGeminiKey;
     }
     
     // Initialize podcast UI
-    const podcastUI = new PodcastUI();
-    podcastUI.init('podcast-container');
+    window.podcastUI = new PodcastUI();
+    window.podcastUI.init('podcast-container');
 });
 
 // AI integration with OpenRouter

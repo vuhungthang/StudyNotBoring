@@ -5,6 +5,55 @@ StudyNotBoring is a web-based application for organizing notes into notebooks wi
 
 ## Recent Changes
 
+### 5. Shadcn/UI Component Implementation
+
+#### Modern UI Components
+A new set of reusable UI components inspired by [shadcn/ui](https://ui.shadcn.com/) has been implemented to improve the user interface:
+
+1. **Button Component**
+   - Multiple variants: default, secondary, destructive, outline
+   - Consistent styling and hover effects
+   - Used throughout the application for actions
+
+2. **Card Component**
+   - Content containers with header, content, and footer sections
+   - Used for settings panels and note displays
+   - Consistent border and shadow styling
+
+3. **Form Components**
+   - Input: Styled text input fields
+   - Select: Styled dropdown select elements
+   - Textarea: Styled multi-line text input
+   - All form elements have consistent focus states and styling
+
+4. **Additional Components**
+   - Badge: Small status indicators with multiple variants
+   - Alert: Contextual messages with titles and descriptions
+   - Dialog: Modal dialogs for important actions or information
+
+#### Styling Improvements
+- Updated CSS with a consistent color palette using CSS variables
+- Improved spacing and typography throughout the application
+- Better responsive design for mobile devices
+- Enhanced accessibility with proper focus states
+- Modern button styles with hover effects
+
+#### Component Structure
+All components are located in the `components/ui` directory:
+- `button.js`: Button component with multiple variants
+- `card.js`: Card component with sub-components (Header, Title, Content, Footer)
+- `input.js`: Styled input component
+- `select.js`: Styled select component
+- `textarea.js`: Styled textarea component
+- `badge.js`: Badge component with multiple variants
+- `alert.js`: Alert component with title and description
+- `dialog.js`: Dialog component for modal interfaces
+- `form.js`: Form-related components
+- `label.js`: Styled label component
+- `tabs.js`: Tabs component for navigation
+
+A demo of these components can be viewed in `test-components.html`.
+
 ### 4. Podcast Generation Feature
 
 #### Generate Podcast from Note
