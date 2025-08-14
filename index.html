@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyNotBoring</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .toggle-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        .settings-section {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .settings-section h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+    </style>
     <!-- Google Generative AI Library (Skypack CDN) -->
     <script type="module">
         import { GoogleGenerativeAI } from 'https://cdn.skypack.dev/@google/generative-ai';
@@ -19,6 +47,7 @@
             <nav class="main-nav">
                 <button class="nav-tab active" data-tab="notes">Notes</button>
                 <button class="nav-tab" data-tab="notebooks">Notebooks</button>
+                <button class="nav-tab" data-tab="podcast">Podcast</button>
                 <button class="nav-tab" data-tab="settings">Settings</button>
             </nav>
         </header>
@@ -80,6 +109,11 @@
                         <button id="save-model-btn">Save Model</button>
                     </div>
                 </div>
+            </section>
+            
+            <!-- Podcast Section -->
+            <section id="podcast-section" class="tab-content">
+                <div id="podcast-container"></div>
             </section>
         </main>
         <script src="script.js" type="module"></script>

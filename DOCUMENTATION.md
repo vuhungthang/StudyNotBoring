@@ -5,6 +5,29 @@ StudyNotBoring is a web-based application for organizing notes into notebooks wi
 
 ## Recent Changes
 
+### 4. Podcast Generation Feature
+
+#### Generate Podcast from Note
+A new feature has been added to convert notes into engaging podcast conversations:
+- Navigate to the Podcast tab
+- Select a note from the dropdown in the "Generate from Note" section
+- Enter a podcast title (optional, will default to note title if empty)
+- Click "Generate Podcast from Note"
+- The note content is automatically converted into a conversational format
+- The podcast is generated using Google Generative AI with multi-speaker voices
+- Listen to the podcast using the built-in player
+- Download the podcast as a WAV file
+
+#### Manual Podcast Creation
+Users can also create podcasts manually:
+- Navigate to the Podcast tab
+- Enter speaker names and select voices in the "Manual Conversation" section
+- Write a conversation in the text area following the provided format
+- Click "Generate Podcast"
+- The podcast is generated using Google Generative AI with multi-speaker voices
+- Listen to the podcast using the built-in player
+- Download the podcast as a WAV file
+
 ### 3. Audio Download Feature
 
 #### Download Audio
@@ -159,3 +182,10 @@ notebooks: {
   - Code blocks
   - Lists
   - Paragraph spacing
+
+### Podcast Generation
+- Convert notes into engaging conversations between two speakers
+- Manual conversation creation with speaker customization
+- Multi-speaker voice synthesis using Google Generative AI
+- Natural conversation flow with questions and reactions
+- WAV audio output for compatibility across devices

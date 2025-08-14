@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import wav from 'wav';
 
