@@ -1,6 +1,6 @@
-# StudyNotBoring
+# StudyNotBoring - Game Edition
 
-A web-based application for organizing notes into notebooks with AI-powered features.
+A web-based application for organizing notes into notebooks with AI-powered features, now with a game-inspired theme!
 
 ## Features
 
@@ -10,7 +10,7 @@ A web-based application for organizing notes into notebooks with AI-powered feat
 - **Text-to-Speech**: Listen to your notes being read aloud
 - **Podcast Generation**: Convert your notes into engaging podcast conversations
 - **API Integration**: Works with OpenRouter and Gemini APIs
-- **Shadcn/UI Components**: Modern, accessible UI components for a better user experience
+- **Game-Themed UI**: Modern, engaging interface with a game-inspired design
 
 ## Getting Started
 
@@ -76,20 +76,16 @@ To use the text-to-speech functionality, you'll need to set up a Google Generati
 4. Listen to your podcast using the player
 5. Download your podcast as a WAV file
 
-## UI Components
+## Game Theme
 
-This project now includes a set of reusable UI components inspired by [shadcn/ui](https://ui.shadcn.com/):
+This version features a new game-inspired theme with:
 
-- **Button**: Primary, secondary, destructive, and outline variants
-- **Card**: Content container with header, content, and footer sections
-- **Input**: Styled text input fields
-- **Select**: Styled dropdown select elements
-- **Textarea**: Styled multi-line text input
-- **Badge**: Small status indicators with multiple variants
-- **Alert**: Contextual messages with titles and descriptions
-- **Dialog**: Modal dialogs for important actions or information
-
-You can view a demo of these components in `test-components.html`.
+- Dark blue background with subtle patterns
+- Neon green primary color for a high-tech gaming feel
+- Glowing animations and hover effects
+- Card-based design with depth and shadows
+- Modern, clean typography with uppercase headings
+- Interactive elements with smooth transitions
 
 ## Technical Details
 

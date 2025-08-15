@@ -3,512 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyNotBoring</title>
+    <title>StudyNotBoring - Game Edition</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="src/assets/styles.css">
-    <style>
-        :root {
-          --background: 0 0% 98%;
-          --foreground: 120 10% 15%;
-          --card: 0 0% 95%;
-          --card-foreground: 120 10% 15%;
-          --popover: 0 0% 98%;
-          --popover-foreground: 120 10% 15%;
-          --primary: 140 60% 40%;
-          --primary-foreground: 0 0% 100%;
-          --secondary: 130 30% 85%;
-          --secondary-foreground: 120 10% 15%;
-          --muted: 130 20% 90%;
-          --muted-foreground: 120 10% 40%;
-          --accent: 130 30% 85%;
-          --accent-foreground: 120 10% 15%;
-          --destructive: 0 80% 50%;
-          --destructive-foreground: 0 0% 100%;
-          --border: 130 25% 80%;
-          --input: 130 25% 80%;
-          --ring: 140 60% 40%;
-          --radius: 0.5rem;
-        }
-        
-        body {
-            background-color: hsl(var(--background));
-            color: hsl(var(--foreground));
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .nav-tab {
-            background: none;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            cursor: pointer;
-            border-bottom-width: 3px;
-            border-bottom-style: solid;
-            transition: all 0.3s ease;
-        }
-        
-        .active {
-            border-bottom-color: hsl(var(--primary));
-            color: hsl(var(--primary));
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .settings-card {
-            background-color: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: calc(var(--radius) - 2px);
-            padding: 20px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        }
-        
-        .settings-card h2 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid hsl(var(--border));
-        }
-        
-        .note {
-            background-color: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: calc(var(--radius) - 2px);
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .note:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
-        }
-        
-        .note::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 4px;
-            background: hsl(var(--primary));
-        }
-        
-        .note h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: hsl(var(--foreground));
-            font-weight: 600;
-        }
-        
-        .note-content {
-            margin-bottom: 15px;
-            color: hsl(var(--muted-foreground));
-            line-height: 1.6;
-        }
-        
-        .note-meta {
-            font-size: 0.85em;
-            color: hsl(var(--muted-foreground));
-            margin-bottom: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed hsl(var(--border));
-        }
-        
-        .note-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: calc(var(--radius) - 2px);
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.15s ease;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border: 1px solid transparent;
-            min-height: 36px;
-        }
-        
-        .btn-primary {
-            background-color: hsl(var(--primary));
-            color: hsl(var(--primary-foreground));
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        
-        .btn-primary:hover {
-            background-color: hsl(var(--primary) / 0.9);
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background-color: hsl(var(--secondary));
-            color: hsl(var(--secondary-foreground));
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        
-        .btn-secondary:hover {
-            background-color: hsl(var(--secondary) / 0.8);
-            transform: translateY(-1px);
-        }
-        
-        .btn-destructive {
-            background-color: hsl(var(--destructive));
-            color: hsl(var(--destructive-foreground));
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        
-        .btn-destructive:hover {
-            background-color: hsl(var(--destructive) / 0.9);
-            transform: translateY(-1px);
-        }
-        
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid hsl(var(--border));
-            color: hsl(var(--foreground));
-        }
-        
-        .btn-outline:hover {
-            background-color: hsl(var(--accent));
-            color: hsl(var(--accent-foreground));
-        }
-        
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: calc(var(--radius) - 2px);
-            border: 1px solid hsl(var(--input));
-            background-color: hsl(var(--background));
-            font-size: 0.875rem;
-            transition: all 0.15s ease;
-        }
-        
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: hsl(var(--ring));
-            box-shadow: 0 0 0 2px hsl(var(--ring)) / 0.2;
-        }
-        
-        .form-input:disabled, .form-select:disabled, .form-textarea:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .notes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            margin-top: 20px;
-        }
-        
-        .notebook {
-            background-color: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: calc(var(--radius) - 2px);
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-        }
-        
-        .notebook:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transform: translateY(-2px);
-        }
-        
-        .card {
-            background-color: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: calc(var(--radius) - 2px);
-            padding: 20px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        }
-        
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid hsl(var(--border));
-            color: hsl(var(--foreground));
-        }
-        
-        .btn-outline:hover {
-            background-color: hsl(var(--accent));
-            color: hsl(var(--accent-foreground));
-        }
-        
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .notebook-simple-card {
-            background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
-            border-radius: var(--radius);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .notebook-simple-card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transform: translateY(-2px);
-        }
-        
-        .notebook-card-header {
-            padding: 1rem;
-            border-bottom: 1px solid hsl(var(--border));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .notebook-card-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin: 0;
-            color: hsl(var(--foreground));
-        }
-        
-        .notebook-card-count {
-            background-color: hsl(var(--primary) / 0.1);
-            color: hsl(var(--primary));
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-            font-weight: 500;
-            font-size: 0.875rem;
-        }
-        
-        .notebook-card-actions {
-            padding: 1rem;
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .notebook-controls {
-            display: flex;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        
-        .notebook-note-forms {
-            width: 100%;
-            margin-top: 15px;
-        }
-        
-        .notebook-note-forms .settings-card {
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .notebook-note-forms .settings-card h4 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid hsl(var(--border));
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: hsl(var(--foreground));
-        }
-        
-        .api-status, .model-status {
-            /* display controlled by JavaScript */
-        }
-        
-        .api-status.bg-green-100, .model-status.bg-blue-100 {
-            background-color: hsl(var(--secondary));
-            border: 1px solid hsl(var(--border));
-            color: hsl(var(--foreground));
-            padding: 1rem;
-            border-radius: calc(var(--radius) - 2px);
-            margin-bottom: 1rem;
-        }
-        
-        .api-status .edit-api-btn, .model-status .edit-model-btn {
-            background: none;
-            border: none;
-            color: hsl(var(--primary));
-            text-decoration: underline;
-            cursor: pointer;
-            padding: 0;
-            font-size: 0.875rem;
-        }
-        
-        .api-status .edit-api-btn:hover, .model-status .edit-model-btn:hover {
-            color: hsl(var(--primary) / 0.8);
-        }
-        
-        .status {
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: calc(var(--radius) - 2px);
-            text-align: center;
-        }
-        
-        .status.success {
-            background-color: hsl(var(--primary) / 0.1);
-            color: hsl(var(--primary));
-        }
-        
-        .status.error {
-            background-color: hsl(var(--destructive) / 0.1);
-            color: hsl(var(--destructive));
-        }
-        
-        .podcast-player {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .podcast-player audio {
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        
-        .settings-section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid hsl(var(--border));
-        }
-        
-        .settings-section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 0;
-            color: hsl(var(--foreground));
-        }
-        
-        .toggle-settings-btn {
-            background-color: hsl(var(--accent));
-            color: hsl(var(--accent-foreground));
-            border: 1px solid hsl(var(--border));
-            border-radius: calc(var(--radius) - 2px);
-            padding: 6px 12px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .toggle-settings-btn:hover {
-            background-color: hsl(var(--accent) / 0.8);
-        }
-        
-        .settings-content {
-            transition: all 0.3s ease;
-        }
-        
-        .settings-content.hidden {
-            display: none;
-        }
-        
-        .voice-setting-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .voice-setting-group {
-            flex: 1;
-        }
-        
-        .voice-setting-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: hsl(var(--foreground));
-        }
-        
-        .voice-setting-select {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: calc(var(--radius) - 2px);
-            border: 1px solid hsl(var(--input));
-            background-color: hsl(var(--background));
-            font-size: 0.875rem;
-            transition: all 0.15s ease;
-        }
-        
-        .voice-setting-select:focus {
-            outline: none;
-            border-color: hsl(var(--ring));
-            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .main-nav {
-                flex-direction: column;
-                border-bottom: none;
-            }
-            
-            .nav-tab {
-                border-bottom-width: 1px;
-                border-right: none;
-            }
-            
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .notes-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .notebook-controls {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="src/assets/game-theme.css">
     <!-- Google Generative AI Library (Skypack CDN) -->
     <script type="module">
         import { GoogleGenerativeAI } from 'https://cdn.skypack.dev/@google/generative-ai';
@@ -516,67 +14,67 @@
         console.log('Google Generative AI library loaded');
     </script>
 </head>
-<body class="bg-background text-foreground">
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold mb-6">StudyNotBoring</h1>
-            <nav class="main-nav mb-8">
-                <div class="flex justify-center border-b border-border">
-                    <button class="nav-tab active px-4 py-2 font-medium text-sm border-b-2 border-primary text-primary" data-tab="notes">Notes</button>
-                    <button class="nav-tab px-4 py-2 font-medium text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground" data-tab="notebooks">Notebooks</button>
-                    <button class="nav-tab px-4 py-2 font-medium text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground" data-tab="podcast">Podcast</button>
-                    <button class="nav-tab px-4 py-2 font-medium text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground" data-tab="settings">Settings</button>
+<body>
+    <div class="container">
+        <header>
+            <h1>StudyNotBoring</h1>
+            <nav class="main-nav">
+                <div class="flex justify-center">
+                    <button class="nav-tab active" data-tab="notes">Notes</button>
+                    <button class="nav-tab" data-tab="notebooks">Notebooks</button>
+                    <button class="nav-tab" data-tab="podcast">Podcast</button>
+                    <button class="nav-tab" data-tab="settings">Settings</button>
                 </div>
             </nav>
         </header>
         <main>
             <!-- Notes Section -->
             <section id="notes-section" class="tab-content active">
-                <div class="section-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 class="text-2xl font-bold text-foreground">Your Notes</h2>
-                    <div class="flex items-center gap-2">
-                        <label for="filter-notebook-select" class="text-sm font-medium text-muted-foreground">Filter by notebook:</label>
-                        <select id="filter-notebook-select" class="form-select max-w-[200px]">
+                <div class="section-header">
+                    <h2>Your Notes</h2>
+                    <div class="flex items-center gap-2 mt-4">
+                        <label for="filter-notebook-select">Filter by notebook:</label>
+                        <select id="filter-notebook-select" class="form-select">
                             <option value="">All Notebooks</option>
                         </select>
                     </div>
                 </div>
                 <div class="notes-grid" id="notes-container">
-                    <p class="no-notes text-muted-foreground col-span-full text-center py-12">No notes found. Create your first note!</p>
+                    <p class="no-notes">No notes found. Create your first note!</p>
                 </div>
             </section>
             
             <!-- Notebooks Section -->
             <section id="notebooks-section" class="tab-content">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 class="text-2xl font-semibold">Notebooks</h2>
-                    <div class="flex items-center gap-2">
-                        <input type="text" id="search-notebooks" placeholder="Search notebooks..." class="form-input max-w-[200px]">
-                        <select id="sort-notebooks" class="form-select max-w-[150px]">
+                <div class="section-header">
+                    <h2>Notebooks</h2>
+                    <div class="flex items-center gap-2 mt-4">
+                        <input type="text" id="search-notebooks" placeholder="Search notebooks..." class="form-input">
+                        <select id="sort-notebooks" class="form-select">
                             <option value="name">Sort by Name</option>
                             <option value="date">Sort by Date</option>
                             <option value="count">Sort by Note Count</option>
                         </select>
                     </div>
                 </div>
-                <div class="notebook-controls mb-6">
+                <div class="notebook-controls">
                     <div class="flex gap-2">
                         <input type="text" id="new-notebook-name" placeholder="New notebook name" required class="form-input flex-1">
-                        <button id="create-notebook-btn" class="btn btn-primary whitespace-nowrap">Create Notebook</button>
+                        <button id="create-notebook-btn" class="btn btn-primary">Create Notebook</button>
                     </div>
                 </div>
-                <div id="notebooks-stats" class="mb-4 text-sm text-muted-foreground"></div>
-                <div id="notebooks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                <div id="notebooks-stats"></div>
+                <div id="notebooks-container"></div>
             </section>
             
             <!-- Settings Section -->
             <section id="settings-section" class="tab-content">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">Settings</h2>
-                    <p class="text-muted-foreground">Configure your API keys and AI models</p>
+                <div class="section-header">
+                    <h2>Settings</h2>
+                    <p>Configure your API keys and AI models</p>
                 </div>
                 
-                <div class="settings-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="settings-grid">
                     <div class="settings-card">
                         <div class="settings-section-header">
                             <h3 class="settings-section-title">API Configuration</h3>
@@ -587,17 +85,17 @@
                                 <div class="form-group">
                                     <label for="api-key" class="form-label">OpenRouter API Key</label>
                                     <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required class="form-input">
-                                    <p class="text-xs text-muted-foreground mt-1">Used for generating notes and infographics</p>
+                                    <p class="text-xs mt-1">Used for generating notes and infographics</p>
                                 </div>
                                 <button type="submit" class="btn btn-primary w-full">Save API Key</button>
                             </form>
                             
-                            <div class="border-t border-border pt-4">
+                            <div style="border-top: 2px solid var(--game-border); padding-top: 16px;">
                                 <form id="gemini-api-key-form" class="space-y-4">
                                     <div class="form-group">
                                         <label for="gemini-api-key" class="form-label">Gemini API Key</label>
                                         <input type="password" id="gemini-api-key" placeholder="Enter your Gemini API key" required class="form-input">
-                                        <p class="text-xs text-muted-foreground mt-1">Used for text-to-speech features</p>
+                                        <p class="text-xs mt-1">Used for text-to-speech features</p>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-full">Save Gemini API Key</button>
                                 </form>
@@ -628,19 +126,19 @@
                                         <option value="google/gemini-pro">Gemini Pro</option>
                                         <option value="meta-llama/llama-2-70b-chat">Llama 2 70B Chat</option>
                                     </select>
-                                    <p class="text-xs text-muted-foreground mt-1">Select the default AI model for generating content</p>
+                                    <p class="text-xs mt-1">Select the default AI model for generating content</p>
                                 </div>
                                 
                                 <div class="form-group">
                                     <label for="custom-model" class="form-label">Custom Model</label>
                                     <input type="text" id="custom-model" placeholder="Enter a custom model name" class="form-input">
-                                    <p class="text-xs text-muted-foreground mt-1">Enter any supported model identifier</p>
+                                    <p class="text-xs mt-1">Enter any supported model identifier</p>
                                 </div>
                             </div>
                             
-                            <div class="bg-secondary/50 rounded-lg p-4">
-                                <h4 class="font-medium text-sm mb-2">Model Information</h4>
-                                <p class="text-xs text-muted-foreground">
+                            <div style="background-color: rgba(0, 255, 157, 0.1); border: 2px solid var(--game-primary); padding: 16px; border-radius: 8px;">
+                                <h4>Model Information</h4>
+                                <p class="text-xs">
                                     Auto Select will choose the best available model based on your request. 
                                     For consistent results, select a specific model.
                                 </p>
