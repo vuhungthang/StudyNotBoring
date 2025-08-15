@@ -3,159 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyNotBoring - Game Edition</title>
+    <title>StudyNotBoring - Professional Note Taking</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="src/assets/game-theme.css">
+    <link rel="stylesheet" href="src/assets/minimalist-theme.css">
+    <link rel="stylesheet" href="src/assets/components.css">
     <!-- Google Generative AI Library (Skypack CDN) -->
     <script type="module">
         import { GoogleGenerativeAI } from 'https://cdn.skypack.dev/@google/generative-ai';
         window.GoogleGenerativeAI = GoogleGenerativeAI;
         console.log('Google Generative AI library loaded');
     </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>StudyNotBoring</h1>
-            <nav class="main-nav">
-                <div class="flex justify-center">
-                    <button class="nav-tab active" data-tab="notes">Notes</button>
-                    <button class="nav-tab" data-tab="notebooks">Notebooks</button>
-                    <button class="nav-tab" data-tab="podcast">Podcast</button>
-                    <button class="nav-tab" data-tab="settings">Settings</button>
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo" data-page="home">
+                    StudyNotBoring
+                </a>
+                <div class="main-nav">
+                    <button class="nav-tab active" data-page="home">Home</button>
+                    <button class="nav-tab" data-page="dashboard">Dashboard</button>
+                    <button class="nav-tab" data-page="about">About</button>
                 </div>
             </nav>
-        </header>
-        <main>
-            <!-- Notes Section -->
-            <section id="notes-section" class="tab-content active">
-                <div class="section-header">
-                    <h2>Your Notes</h2>
-                    <div class="flex items-center gap-2 mt-4">
-                        <label for="filter-notebook-select">Filter by notebook:</label>
-                        <select id="filter-notebook-select" class="form-select">
-                            <option value="">All Notebooks</option>
-                        </select>
-                    </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Processing...</div>
+            </div>
+        </div>
+        
+        <!-- Notification Container -->
+        <div class="notification" id="notification"></div>
+        
+        <!-- Note Modal -->
+        <div class="note-modal" id="note-modal">
+            <div class="note-modal-content">
+                <div class="note-modal-header">
+                    <h3 class="note-modal-title" id="note-modal-title">Note</h3>
+                    <button class="note-modal-close" id="note-modal-close">&times;</button>
                 </div>
-                <div class="notes-grid" id="notes-container">
-                    <p class="no-notes">No notes found. Create your first note!</p>
+                <div class="note-modal-body">
+                    <div class="note-modal-content-expanded" id="note-modal-content"></div>
                 </div>
-            </section>
+            </div>
+        </div>
+        
+        <!-- Home Page -->
+        <section id="home-page" class="page active">
+            <div class="hero">
+                <div class="container">
+                    <h1>Transform Your Learning Experience</h1>
+                    <p>StudyNotBoring helps you organize your thoughts, generate AI-powered content, and turn your notes into engaging podcasts.</p>
+                    <button class="cta-button" data-page="dashboard">Get Started</button>
+                </div>
+            </div>
             
-            <!-- Notebooks Section -->
-            <section id="notebooks-section" class="tab-content">
-                <div class="section-header">
-                    <h2>Notebooks</h2>
-                    <div class="flex items-center gap-2 mt-4">
-                        <input type="text" id="search-notebooks" placeholder="Search notebooks..." class="form-input">
-                        <select id="sort-notebooks" class="form-select">
-                            <option value="name">Sort by Name</option>
-                            <option value="date">Sort by Date</option>
-                            <option value="count">Sort by Note Count</option>
-                        </select>
+            <div class="container">
+                <div class="features">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                        <div class="text-center p-6 bg-white rounded-lg shadow">
+                            <h3 class="text-xl font-semibold mb-2">Organized Notebooks</h3>
+                            <p class="text-gray-600">Create and organize notes in customizable notebooks for better knowledge management.</p>
+                        </div>
+                        <div class="text-center p-6 bg-white rounded-lg shadow">
+                            <h3 class="text-xl font-semibold mb-2">AI-Powered</h3>
+                            <p class="text-gray-600">Generate notes, create infographics, and convert text to speech with cutting-edge AI.</p>
+                        </div>
+                        <div class="text-center p-6 bg-white rounded-lg shadow">
+                            <h3 class="text-xl font-semibold mb-2">Audio Learning</h3>
+                            <p class="text-gray-600">Listen to your notes as podcasts for on-the-go learning and better retention.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="notebook-controls">
-                    <div class="flex gap-2">
-                        <input type="text" id="new-notebook-name" placeholder="New notebook name" required class="form-input flex-1">
-                        <button id="create-notebook-btn" class="btn btn-primary">Create Notebook</button>
+            </div>
+        </section>
+        
+        <!-- Dashboard Page (Original App) -->
+        <section id="dashboard-page" class="page">
+            <div class="container">
+                <nav class="main-nav mb-6">
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button class="nav-tab active" data-tab="notes">Notes</button>
+                        <button class="nav-tab" data-tab="notebooks">Notebooks</button>
+                        <button class="nav-tab" data-tab="podcast">Podcast</button>
+                        <button class="nav-tab" data-tab="settings">Settings</button>
                     </div>
-                </div>
-                <div id="notebooks-stats"></div>
-                <div id="notebooks-container"></div>
-            </section>
-            
-            <!-- Settings Section -->
-            <section id="settings-section" class="tab-content">
-                <div class="section-header">
-                    <h2>Settings</h2>
-                    <p>Configure your API keys and AI models</p>
-                </div>
+                </nav>
                 
-                <div class="settings-grid">
-                    <div class="settings-card">
-                        <div class="settings-section-header">
-                            <h3 class="settings-section-title">API Configuration</h3>
+                <!-- Notes Section -->
+                <section id="notes-section" class="tab-content active">
+                    <div class="section-header">
+                        <h2>Your Notes</h2>
+                        <p>Manage and organize all your notes in one place</p>
+                        <div class="flex items-center gap-2 mt-4">
+                            <label for="filter-notebook-select">Filter by notebook:</label>
+                            <select id="filter-notebook-select" class="form-select">
+                                <option value="">All Notebooks</option>
+                            </select>
                         </div>
-                        
-                        <div class="space-y-6">
-                            <form id="api-key-form" class="space-y-4">
-                                <div class="form-group">
-                                    <label for="api-key" class="form-label">OpenRouter API Key</label>
-                                    <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required class="form-input">
-                                    <p class="text-xs mt-1">Used for generating notes and infographics</p>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-full">Save API Key</button>
-                            </form>
-                            
-                            <div style="border-top: 2px solid var(--game-border); padding-top: 16px;">
-                                <form id="gemini-api-key-form" class="space-y-4">
-                                    <div class="form-group">
-                                        <label for="gemini-api-key" class="form-label">Gemini API Key</label>
-                                        <input type="password" id="gemini-api-key" placeholder="Enter your Gemini API key" required class="form-input">
-                                        <p class="text-xs mt-1">Used for text-to-speech features</p>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary w-full">Save Gemini API Key</button>
-                                </form>
-                            </div>
-                            
-                            <button id="hide-api-key-form" style="display: none;" class="btn btn-secondary w-full">Hide API Key Form</button>
+                    </div>
+                    <div class="notes-controls flex flex-wrap gap-2 mb-4">
+                        <button id="export-notes-btn" class="btn btn-outline">Export Notes</button>
+                        <button id="import-notes-btn" class="btn btn-outline">Import Notes</button>
+                        <input type="file" id="import-file-input" accept=".json" class="hidden">
+                    </div>
+                    <div class="notes-grid" id="notes-container">
+                        <p class="no-notes">No notes found. Create your first note!</p>
+                    </div>
+                </section>
+                
+                <!-- Notebooks Section -->
+                <section id="notebooks-section" class="tab-content">
+                    <div class="section-header">
+                        <h2>Notebooks</h2>
+                        <p>Organize your notes into topic-specific notebooks</p>
+                        <div class="flex flex-wrap items-center gap-2 mt-4">
+                            <input type="text" id="search-notebooks" placeholder="Search notebooks..." class="form-input">
+                            <select id="sort-notebooks" class="form-select">
+                                <option value="name">Sort by Name</option>
+                                <option value="date">Sort by Date</option>
+                                <option value="count">Sort by Note Count</option>
+                            </select>
                         </div>
+                    </div>
+                    <div class="notebook-controls">
+                        <div class="flex flex-wrap gap-2">
+                            <input type="text" id="new-notebook-name" placeholder="New notebook name" required class="form-input flex-1">
+                            <button id="create-notebook-btn" class="btn btn-primary">Create Notebook</button>
+                        </div>
+                    </div>
+                    <div id="notebooks-stats"></div>
+                    <div id="notebooks-container"></div>
+                </section>
+                
+                <!-- Settings Section -->
+                <section id="settings-section" class="tab-content">
+                    <div class="section-header">
+                        <h2>Settings</h2>
+                        <p>Configure your API keys and AI models</p>
                     </div>
                     
-                    <div class="settings-card">
-                        <div class="settings-section-header">
-                            <h3 class="settings-section-title">AI Model Selection</h3>
-                        </div>
-                        
-                        <div class="space-y-6">
-                            <div class="model-controls space-y-4">
-                                <div class="form-group">
-                                    <label for="model-select" class="form-label">Primary Model</label>
-                                    <select id="model-select" class="form-select">
-                                        <option value="openrouter/auto">Auto Select (Recommended)</option>
-                                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                                        <option value="openai/gpt-4">GPT-4</option>
-                                        <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
-                                        <option value="anthropic/claude-2">Claude 2</option>
-                                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
-                                        <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
-                                        <option value="google/palm-2-chat-bison">PaLM 2 Chat</option>
-                                        <option value="google/gemini-pro">Gemini Pro</option>
-                                        <option value="meta-llama/llama-2-70b-chat">Llama 2 70B Chat</option>
-                                    </select>
-                                    <p class="text-xs mt-1">Select the default AI model for generating content</p>
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <div class="settings-section-header">
+                                <h3 class="settings-section-title">API Configuration</h3>
+                            </div>
+                            
+                            <div class="setting-explanation">
+                                <h4>Why API Keys?</h4>
+                                <p>API keys allow StudyNotBoring to connect to AI services for generating notes, creating infographics, and converting text to speech.</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <form id="api-key-form" class="space-y-4">
+                                    <div class="form-group">
+                                        <label for="api-key" class="form-label">OpenRouter API Key</label>
+                                        <input type="password" id="api-key" placeholder="Enter your OpenRouter API key" required class="form-input">
+                                        <p class="text-xs mt-1 text-gray-500">Used for generating notes and infographics</p>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-full">
+                                        Save API Key
+                                    </button>
+                                </form>
+                                
+                                <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                                    <form id="gemini-api-key-form" class="space-y-4">
+                                        <div class="form-group">
+                                            <label for="gemini-api-key" class="form-label">Gemini API Key</label>
+                                            <input type="password" id="gemini-api-key" placeholder="Enter your Gemini API key" required class="form-input">
+                                            <p class="text-xs mt-1 text-gray-500">Used for text-to-speech features</p>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-full">
+                                            Save Gemini API Key
+                                        </button>
+                                    </form>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label for="custom-model" class="form-label">Custom Model</label>
-                                    <input type="text" id="custom-model" placeholder="Enter a custom model name" class="form-input">
-                                    <p class="text-xs mt-1">Enter any supported model identifier</p>
+                                <button id="hide-api-key-form" style="display: none;" class="btn btn-secondary w-full">
+                                    Hide API Key Form
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card">
+                            <div class="settings-section-header">
+                                <h3 class="settings-section-title">AI Model Selection</h3>
+                            </div>
+                            
+                            <div class="setting-explanation">
+                                <h4>Choosing the Right Model</h4>
+                                <p>Different AI models have different strengths. Auto Select chooses the best model for your request, but you can specify a particular model for consistent results.</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div class="model-controls space-y-4">
+                                    <div class="form-group">
+                                        <label for="model-select" class="form-label">Primary Model</label>
+                                        <select id="model-select" class="form-select">
+                                            <option value="openrouter/auto">Auto Select (Recommended)</option>
+                                            <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                            <option value="openai/gpt-4">GPT-4</option>
+                                            <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                                            <option value="anthropic/claude-2">Claude 2</option>
+                                            <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                                            <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+                                            <option value="google/palm-2-chat-bison">PaLM 2 Chat</option>
+                                            <option value="google/gemini-pro">Gemini Pro</option>
+                                            <option value="meta-llama/llama-2-70b-chat">Llama 2 70B Chat</option>
+                                        </select>
+                                        <p class="text-xs mt-1 text-gray-500">Select the default AI model for generating content</p>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="custom-model" class="form-label">Custom Model</label>
+                                        <input type="text" id="custom-model" placeholder="Enter a custom model name" class="form-input">
+                                        <p class="text-xs mt-1 text-gray-500">Enter any supported model identifier</p>
+                                    </div>
                                 </div>
+                                
+                                <div style="background-color: rgba(37, 99, 235, 0.05); border: 1px solid #2563eb; padding: 1rem; border-radius: 0.5rem;">
+                                    <h4>Model Information</h4>
+                                    <p class="text-xs text-gray-600">
+                                        Auto Select will choose the best available model based on your request. 
+                                        For consistent results, select a specific model.
+                                    </p>
+                                </div>
+                                
+                                <button id="save-model-btn" class="btn btn-primary w-full">
+                                    Save Model Selection
+                                </button>
                             </div>
-                            
-                            <div style="background-color: rgba(0, 255, 157, 0.1); border: 2px solid var(--game-primary); padding: 16px; border-radius: 8px;">
-                                <h4>Model Information</h4>
-                                <p class="text-xs">
-                                    Auto Select will choose the best available model based on your request. 
-                                    For consistent results, select a specific model.
-                                </p>
-                            </div>
-                            
-                            <button id="save-model-btn" class="btn btn-primary w-full">Save Model Selection</button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Podcast Section -->
+                <section id="podcast-section" class="tab-content">
+                    <div id="podcast-container"></div>
+                </section>
+            </div>
+        </section>
+        
+        <!-- About Page -->
+        <section id="about-page" class="page">
+            <div class="container">
+                <div class="section-header">
+                    <h2>About StudyNotBoring</h2>
+                    <p>Learn more about our mission and features</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Our Mission</h3>
+                    <p class="mb-4">StudyNotBoring was created to revolutionize the way people take and interact with notes. We believe that learning should be engaging, efficient, and accessible to everyone.</p>
+                    <p>Our platform combines traditional note-taking with cutting-edge AI technology to help you organize your thoughts, generate content, and consume information in new and exciting ways.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4">Key Features</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-2">✓</span>
+                                <span>Organize notes in customizable notebooks</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-2">✓</span>
+                                <span>AI-powered note generation</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-2">✓</span>
+                                <span>Text-to-speech conversion for audio learning</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-2">✓</span>
+                                <span>Infographic creation from your notes</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-2">✓</span>
+                                <span>Export and import functionality</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold mb-4">How It Works</h3>
+                        <ol class="space-y-3 list-decimal list-inside">
+                            <li>Create notebooks for different subjects or topics</li>
+                            <li>Add notes manually or generate them with AI</li>
+                            <li>Listen to your notes as podcasts for on-the-go learning</li>
+                            <li>Transform notes into visual infographics</li>
+                            <li>Export your knowledge for backup or sharing</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4">The Technology Behind StudyNotBoring</h3>
+                    <p class="mb-4">StudyNotBoring leverages state-of-the-art AI models to provide a seamless learning experience:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="border border-gray-200 rounded p-4">
+                            <h4 class="font-semibold mb-2">Natural Language Processing</h4>
+                            <p class="text-sm text-gray-600">Advanced NLP models help generate and organize your content intelligently.</p>
+                        </div>
+                        <div class="border border-gray-200 rounded p-4">
+                            <h4 class="font-semibold mb-2">Text-to-Speech</h4>
+                            <p class="text-sm text-gray-600">High-quality voice synthesis for converting your notes into audio.</p>
+                        </div>
+                        <div class="border border-gray-200 rounded p-4">
+                            <h4 class="font-semibold mb-2">Data Visualization</h4>
+                            <p class="text-sm text-gray-600">Transform text-based notes into engaging visual infographics.</p>
                         </div>
                     </div>
                 </div>
-            </section>
+                
+                <div class="bg-white rounded-lg shadow p-6 mt-8">
+                    <h3 class="text-xl font-semibold mb-4">Contact the Author</h3>
+                    <p class="mb-2">Have questions or feedback? Feel free to reach out to the author:</p>
+                    <p class="text-blue-600 font-medium">vuhungthang2707@gmail.com</p>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+    
+    <script src="src/script.js" type="module"></script>
+    
+    <script>
+        // Page navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Page navigation
+            document.querySelectorAll('[data-page]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    
+                    // Update active page
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    const targetPage = document.getElementById(`${page}-page`);
+                    if (targetPage) {
+                        targetPage.classList.add('active');
+                    }
+                    
+                    // Update active nav tab
+                    document.querySelectorAll('[data-page]').forEach(tab => tab.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // If navigating to dashboard, ensure the first tab is active
+                    if (page === 'dashboard') {
+                        // Remove active class from all dashboard tabs
+                        document.querySelectorAll('#dashboard-page .nav-tab[data-tab]').forEach(t => t.classList.remove('active'));
+                        // Add active class to first tab (notes)
+                        const firstTab = document.querySelector('#dashboard-page .nav-tab[data-tab="notes"]');
+                        if (firstTab) {
+                            firstTab.classList.add('active');
+                        }
+                        // Show first tab content
+                        document.querySelectorAll('#dashboard-page .tab-content').forEach(content => content.classList.remove('active'));
+                        const firstTabContent = document.getElementById('notes-section');
+                        if (firstTabContent) {
+                            firstTabContent.classList.add('active');
+                        }
+                    }
+                });
+            });
             
-            <!-- Podcast Section -->
-            <section id="podcast-section" class="tab-content">
-                <div id="podcast-container"></div>
-            </section>
-        </main>
-        <script src="src/script.js" type="module"></script>
-    </div>
+            
+            // Theme toggle functionality - simplified to only use minimalist theme
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeLink = document.querySelector('link[href*="minimalist-theme.css"]');
+            
+            // Always use minimalist theme
+            themeLink.setAttribute('href', 'src/assets/minimalist-theme.css');
+            
+            // Hide theme toggle button since we only have one theme
+            if (themeToggle) {
+                themeToggle.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

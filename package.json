@@ -7,7 +7,8 @@
   "scripts": {
     "start": "npx serve .",
     "build:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --watch",
-    "build": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --minify",
+    "build": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --minify && node build-css.cjs",
+    "build:bundle": "node build-css.cjs",
     "test:tts": "node test-voice.js"
   },
   "dependencies": {

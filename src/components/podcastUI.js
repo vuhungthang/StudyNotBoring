@@ -1,5 +1,6 @@
 // podcastUI.js
 import { generatePodcast, generatePodcastConversation, parsePodcastConversation } from '../components/podcastGenerator.js';
+import UIComponents from './ui.js';
 
 class PodcastUI {
   constructor() {
@@ -11,7 +12,7 @@ class PodcastUI {
   init(containerId) {
     this.container = document.getElementById(containerId);
     if (!this.container) {
-      console.error(`Container with id '${containerId}' not found`);
+      console.error("Container with id '" + containerId + "' not found");
       return;
     }
 
@@ -40,7 +41,7 @@ class PodcastUI {
     let noteOptions = '<option value="">Select a note</option>';
     
     for (const notebookName in this.notebooks) {
-      notebookOptions += `<option value="${notebookName}">${notebookName}</option>`;
+      notebookOptions += '<option value="' + notebookName + '">' + notebookName + '</option>';
       
       // Add notes from this notebook
       this.notebooks[notebookName].forEach(note => {
@@ -52,225 +53,220 @@ class PodcastUI {
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/\n/g, '&#10;'); // Preserve newlines
-        noteOptions += `<option value="${notebookName}::${note.id}" data-content="${escapedContent}">${notebookName} - ${note.title}</option>`;
+        noteOptions += '<option value="' + notebookName + '::' + note.id + '" data-content="' + escapedContent + '">' + notebookName + ' - ' + note.title + '</option>';
       });
     }
 
-    this.container.innerHTML = `
-      <div class="podcast-generator max-w-6xl mx-auto">
-        <header class="text-center mb-12">
-          <h1 class="text-4xl font-bold mb-4">Podcast Studio</h1>
-          <p class="text-lg text-muted-foreground">Transform your notes into engaging audio conversations</p>
-        </header>
+    this.container.innerHTML = 
+      '<div class="podcast-studio">' +
+        '<div class="podcast-header">' +
+          '<h1>Podcast Studio</h1>' +
+          '<p>Transform your notes into engaging audio conversations</p>' +
+        '</div>' +
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Main Content -->
-          <div class="lg:col-span-2">
-            <div class="card mb-8">
-              <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold">Generate from Note</h2>
-                <div class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                  AI-Powered
-                </div>
-              </div>
+        '<div class="podcast-layout">' +
+          '<!-- Main Content Area -->' +
+          '<div class="podcast-main">' +
+            '<!-- Generate Podcast Card -->' +
+            '<div class="podcast-card">' +
+              '<div class="card-header">' +
+                '<h2>Generate from Note</h2>' +
+                UIComponents.badge({ variant: "secondary", children: "AI-Powered" }) +
+              '</div>' +
               
-              <div class="space-y-6">
-                <div>
-                  <label class="block text-sm font-medium mb-2">Select a Note</label>
-                  <select id="note-select" class="form-select">
-                    ${noteOptions}
-                  </select>
-                </div>
+              '<div class="card-content">' +
+                '<div class="form-group">' +
+                  '<label for="note-select">Select a Note</label>' +
+                  UIComponents.select({ id: "note-select", className: "form-select" }, noteOptions) +
+                '</div>' +
                 
-                <div>
-                  <label class="block text-sm font-medium mb-2">Podcast Title</label>
-                  <input type="text" id="podcast-title" placeholder="Enter a title for your podcast" class="form-input">
-                </div>
+                '<div class="form-group">' +
+                  '<label for="podcast-title">Podcast Title</label>' +
+                  UIComponents.input({ type: "text", id: "podcast-title", placeholder: "Enter a title for your podcast" }) +
+                '</div>' +
                 
-                <div class="settings-section">
-                  <div class="settings-section-header">
-                    <h3 class="settings-section-title">Advanced Settings</h3>
-                    <button id="toggle-settings-btn" class="toggle-settings-btn">
-                      Expand
-                    </button>
-                  </div>
+                '<div class="advanced-settings">' +
+                  '<div class="settings-header">' +
+                    '<h3>Advanced Settings</h3>' +
+                    '<button id="toggle-settings-btn" class="toggle-btn">' +
+                      '<span>Expand</span>' +
+                      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                        '<path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                      '</svg>' +
+                    '</button>' +
+                  '</div>' +
                   
-                  <div id="podcast-settings" class="settings-content hidden">
-                    <div class="voice-setting-row">
-                      <div class="voice-setting-group">
-                        <label class="voice-setting-label">Speaker 1 Voice</label>
-                        <select id="speaker1-voice" class="voice-setting-select">
-                          <option value="Kore">Kore (Firm)</option>
-                          <option value="Puck">Puck (Upbeat)</option>
-                          <option value="Charon">Charon (Informative)</option>
-                          <option value="Zephyr">Zephyr (Bright)</option>
-                          <option value="Fenrir">Fenrir (Excitable)</option>
-                          <option value="Leda">Leda (Youthful)</option>
-                          <option value="Orus">Orus (Firm)</option>
-                          <option value="Aoede">Aoede (Breezy)</option>
-                          <option value="Callirrhoe">Callirrhoe (Easy-going)</option>
-                          <option value="Autonoe">Autonoe (Bright)</option>
-                          <option value="Enceladus">Enceladus (Breathy)</option>
-                          <option value="Iapetus">Iapetus (Clear)</option>
-                          <option value="Umbriel">Umbriel (Easy-going)</option>
-                          <option value="Algieba">Algieba (Smooth)</option>
-                          <option value="Despina">Despina (Smooth)</option>
-                          <option value="Erinome">Erinome (Clear)</option>
-                          <option value="Algenib">Algenib (Gravelly)</option>
-                          <option value="Rasalgethi">Rasalgethi (Informative)</option>
-                          <option value="Laomedeia">Laomedeia (Upbeat)</option>
-                          <option value="Achernar">Achernar (Soft)</option>
-                          <option value="Alnilam">Alnilam (Firm)</option>
-                          <option value="Schedar">Schedar (Even)</option>
-                          <option value="Gacrux">Gacrux (Mature)</option>
-                          <option value="Pulcherrima">Pulcherrima (Forward)</option>
-                          <option value="Achird">Achird (Friendly)</option>
-                          <option value="Zubenelgenubi">Zubenelgenubi (Casual)</option>
-                          <option value="Vindemiatrix">Vindemiatrix (Gentle)</option>
-                          <option value="Sadachbia">Sadachbia (Lively)</option>
-                          <option value="Sadaltager">Sadaltager (Knowledgeable)</option>
-                          <option value="Sulafat">Sulafat (Warm)</option>
-                        </select>
-                        <p class="text-xs text-muted-foreground mt-1">Select the voice for the first speaker</p>
-                      </div>
+                  '<div id="podcast-settings" class="settings-content">' +
+                    '<div class="voice-settings">' +
+                      '<div class="voice-setting">' +
+                        '<label for="speaker1-voice">Speaker 1 Voice</label>' +
+                        UIComponents.select({ id: "speaker1-voice" }, 
+                          '<option value="Kore">Kore (Firm)</option>' +
+                          '<option value="Puck">Puck (Upbeat)</option>' +
+                          '<option value="Charon">Charon (Informative)</option>' +
+                          '<option value="Zephyr">Zephyr (Bright)</option>' +
+                          '<option value="Fenrir">Fenrir (Excitable)</option>' +
+                          '<option value="Leda">Leda (Youthful)</option>' +
+                          '<option value="Orus">Orus (Firm)</option>' +
+                          '<option value="Aoede">Aoede (Breezy)</option>' +
+                          '<option value="Callirrhoe">Callirrhoe (Easy-going)</option>' +
+                          '<option value="Autonoe">Autonoe (Bright)</option>' +
+                          '<option value="Enceladus">Enceladus (Breathy)</option>' +
+                          '<option value="Iapetus">Iapetus (Clear)</option>' +
+                          '<option value="Umbriel">Umbriel (Easy-going)</option>' +
+                          '<option value="Algieba">Algieba (Smooth)</option>' +
+                          '<option value="Despina">Despina (Smooth)</option>' +
+                          '<option value="Erinome">Erinome (Clear)</option>' +
+                          '<option value="Algenib">Algenib (Gravelly)</option>' +
+                          '<option value="Rasalgethi">Rasalgethi (Informative)</option>' +
+                          '<option value="Laomedeia">Laomedeia (Upbeat)</option>' +
+                          '<option value="Achernar">Achernar (Soft)</option>' +
+                          '<option value="Alnilam">Alnilam (Firm)</option>' +
+                          '<option value="Schedar">Schedar (Even)</option>' +
+                          '<option value="Gacrux">Gacrux (Mature)</option>' +
+                          '<option value="Pulcherrima">Pulcherrima (Forward)</option>' +
+                          '<option value="Achird">Achird (Friendly)</option>' +
+                          '<option value="Zubenelgenubi">Zubenelgenubi (Casual)</option>' +
+                          '<option value="Vindemiatrix">Vindemiatrix (Gentle)</option>' +
+                          '<option value="Sadachbia">Sadachbia (Lively)</option>' +
+                          '<option value="Sadaltager">Sadaltager (Knowledgeable)</option>' +
+                          '<option value="Sulafat">Sulafat (Warm)</option>'
+                        ) +
+                        '<p class="help-text">Select the voice for the first speaker</p>' +
+                      '</div>' +
                       
-                      <div class="voice-setting-group">
-                        <label class="voice-setting-label">Speaker 2 Voice</label>
-                        <select id="speaker2-voice" class="voice-setting-select">
-                          <option value="Puck">Puck (Upbeat)</option>
-                          <option value="Kore">Kore (Firm)</option>
-                          <option value="Charon">Charon (Informative)</option>
-                          <option value="Zephyr">Zephyr (Bright)</option>
-                          <option value="Fenrir">Fenrir (Excitable)</option>
-                          <option value="Leda">Leda (Youthful)</option>
-                          <option value="Orus">Orus (Firm)</option>
-                          <option value="Aoede">Aoede (Breezy)</option>
-                          <option value="Callirrhoe">Callirrhoe (Easy-going)</option>
-                          <option value="Autonoe">Autonoe (Bright)</option>
-                          <option value="Enceladus">Enceladus (Breathy)</option>
-                          <option value="Iapetus">Iapetus (Clear)</option>
-                          <option value="Umbriel">Umbriel (Easy-going)</option>
-                          <option value="Algieba">Algieba (Smooth)</option>
-                          <option value="Despina">Despina (Smooth)</option>
-                          <option value="Erinome">Erinome (Clear)</option>
-                          <option value="Algenib">Algenib (Gravelly)</option>
-                          <option value="Rasalgethi">Rasalgethi (Informative)</option>
-                          <option value="Laomedeia">Laomedeia (Upbeat)</option>
-                          <option value="Achernar">Achernar (Soft)</option>
-                          <option value="Alnilam">Alnilam (Firm)</option>
-                          <option value="Schedar">Schedar (Even)</option>
-                          <option value="Gacrux">Gacrux (Mature)</option>
-                          <option value="Pulcherrima">Pulcherrima (Forward)</option>
-                          <option value="Achird">Achird (Friendly)</option>
-                          <option value="Zubenelgenubi">Zubenelgenubi (Casual)</option>
-                          <option value="Vindemiatrix">Vindemiatrix (Gentle)</option>
-                          <option value="Sadachbia">Sadachbia (Lively)</option>
-                          <option value="Sadaltager">Sadaltager (Knowledgeable)</option>
-                          <option value="Sulafat">Sulafat (Warm)</option>
-                        </select>
-                        <p class="text-xs text-muted-foreground mt-1">Select the voice for the second speaker</p>
-                      </div>
-                    </div>
+                      '<div class="voice-setting">' +
+                        '<label for="speaker2-voice">Speaker 2 Voice</label>' +
+                        UIComponents.select({ id: "speaker2-voice" }, 
+                          '<option value="Puck">Puck (Upbeat)</option>' +
+                          '<option value="Kore">Kore (Firm)</option>' +
+                          '<option value="Charon">Charon (Informative)</option>' +
+                          '<option value="Zephyr">Zephyr (Bright)</option>' +
+                          '<option value="Fenrir">Fenrir (Excitable)</option>' +
+                          '<option value="Leda">Leda (Youthful)</option>' +
+                          '<option value="Orus">Orus (Firm)</option>' +
+                          '<option value="Aoede">Aoede (Breezy)</option>' +
+                          '<option value="Callirrhoe">Callirrhoe (Easy-going)</option>' +
+                          '<option value="Autonoe">Autonoe (Bright)</option>' +
+                          '<option value="Enceladus">Enceladus (Breathy)</option>' +
+                          '<option value="Iapetus">Iapetus (Clear)</option>' +
+                          '<option value="Umbriel">Umbriel (Easy-going)</option>' +
+                          '<option value="Algieba">Algieba (Smooth)</option>' +
+                          '<option value="Despina">Despina (Smooth)</option>' +
+                          '<option value="Erinome">Erinome (Clear)</option>' +
+                          '<option value="Algenib">Algenib (Gravelly)</option>' +
+                          '<option value="Rasalgethi">Rasalgethi (Informative)</option>' +
+                          '<option value="Laomedeia">Laomedeia (Upbeat)</option>' +
+                          '<option value="Achernar">Achernar (Soft)</option>' +
+                          '<option value="Alnilam">Alnilam (Firm)</option>' +
+                          '<option value="Schedar">Schedar (Even)</option>' +
+                          '<option value="Gacrux">Gacrux (Mature)</option>' +
+                          '<option value="Pulcherrima">Pulcherrima (Forward)</option>' +
+                          '<option value="Achird">Achird (Friendly)</option>' +
+                          '<option value="Zubenelgenubi">Zubenelgenubi (Casual)</option>' +
+                          '<option value="Vindemiatrix">Vindemiatrix (Gentle)</option>' +
+                          '<option value="Sadachbia">Sadachbia (Lively)</option>' +
+                          '<option value="Sadaltager">Sadaltager (Knowledgeable)</option>' +
+                          '<option value="Sulafat">Sulafat (Warm)</option>'
+                        ) +
+                        '<p class="help-text">Select the voice for the second speaker</p>' +
+                      '</div>' +
+                    '</div>' +
                     
-                    <div class="bg-secondary/50 rounded-lg p-3 mt-4">
-                      <p class="text-xs text-muted-foreground">
-                        <strong>Tip:</strong> Choose voices with different characteristics to create a more engaging conversation.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                    UIComponents.alert({ variant: "default", className: "tip-alert", children: 
+                      '<p><strong>Tip:</strong> Choose voices with different characteristics to create a more engaging conversation.</p>'
+                    }) +
+                  '</div>' +
+                '</div>' +
                 
-                <button id="generate-from-note-btn" class="btn btn-primary w-full py-3">
-                  Generate Podcast
-                </button>
-              </div>
-            </div>
+                UIComponents.button({ id: "generate-from-note-btn", className: "generate-btn", children: "Generate Podcast" }) +
+              '</div>' +
+            '</div>' +
             
-            <div class="card">
-              <h2 class="text-2xl font-bold mb-6">Recent Podcasts</h2>
-              <div class="space-y-4" id="recent-podcasts-list">
-                <!-- Recent podcasts will be populated here -->
-                <div class="text-center py-8 text-muted-foreground">
-                  <p>No recent podcasts yet. Generate your first podcast to see it here!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Sidebar -->
-          <div>
-            <div class="card mb-8">
-              <h2 class="text-xl font-bold mb-4">How It Works</h2>
-              <div class="space-y-4">
-                <div class="flex items-start space-x-3">
-                  <div class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    1
-                  </div>
-                  <p class="text-sm">Select a note from your notebook to convert into a podcast</p>
-                </div>
-                
-                <div class="flex items-start space-x-3">
-                  <div class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    2
-                  </div>
-                  <p class="text-sm">Our AI transforms your notes into a natural conversation</p>
-                </div>
-                
-                <div class="flex items-start space-x-3">
-                  <div class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    3
-                  </div>
-                  <p class="text-sm">Choose voices and generate your audio podcast</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="card">
-              <h2 class="text-xl font-bold mb-4">Tips for Best Results</h2>
-              <ul class="space-y-2 text-sm">
-                <li class="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mr-2 mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Use detailed, well-structured notes for better conversion</span>
-                </li>
-                <li class="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mr-2 mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Focus on one main topic per podcast for clarity</span>
-                </li>
-                <li class="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary mr-2 mt-0.5 flex-shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Experiment with different voice combinations</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Status and Player -->
-        <div class="mt-8">
-          <div id="podcast-status" class="status hidden"></div>
-          <div id="podcast-player" class="card hidden">
-            <div class="text-center">
-              <h3 class="text-xl font-bold mb-2">Your Podcast is Ready</h3>
-              <p class="text-muted-foreground mb-6">Listen or download your generated podcast</p>
+            '<!-- Recent Podcasts Card -->' +
+            '<div class="podcast-card">' +
+              '<div class="card-header">' +
+                '<h2>Recent Podcasts</h2>' +
+              '</div>' +
               
-              <div class="bg-secondary/50 rounded-lg p-6 mb-6">
-                <audio id="podcast-audio" controls class="w-full mb-4"></audio>
-                <div class="flex justify-center space-x-4">
-                  <button id="play-btn" class="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Play
-                  </button>
-                  <button id="download-podcast-btn" class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Download
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+              '<div class="card-content">' +
+                '<div class="recent-podcasts-list" id="recent-podcasts-list">' +
+                  '<div class="empty-state">' +
+                    '<p>No recent podcasts yet. Generate your first podcast to see it here!</p>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          
+          '<!-- Sidebar -->' +
+          '<div class="podcast-sidebar">' +
+            '<!-- How It Works Card -->' +
+            '<div class="podcast-card">' +
+              '<div class="card-header">' +
+                '<h2>How It Works</h2>' +
+              '</div>' +
+              
+              '<div class="card-content">' +
+                '<div class="steps">' +
+                  '<div class="step">' +
+                    '<div class="step-number">1</div>' +
+                    '<p>Select a note from your notebook to convert into a podcast</p>' +
+                  '</div>' +
+                  
+                  '<div class="step">' +
+                    '<div class="step-number">2</div>' +
+                    '<p>Our AI transforms your notes into a natural conversation</p>' +
+                  '</div>' +
+                  
+                  '<div class="step">' +
+                    '<div class="step-number">3</div>' +
+                    '<p>Choose voices and generate your audio podcast</p>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            
+            '<!-- Tips Card -->' +
+            '<div class="podcast-card">' +
+              '<div class="card-header">' +
+                '<h2>Tips for Best Results</h2>' +
+              '</div>' +
+              
+              '<div class="card-content">' +
+                '<ul class="tips-list">' +
+                  '<li><span>•</span><span>Use detailed, well-structured notes for better conversion</span></li>' +
+                  '<li><span>•</span><span>Focus on one main topic per podcast for clarity</span></li>' +
+                  '<li><span>•</span><span>Experiment with different voice combinations</span></li>' +
+                '</ul>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        
+        '<!-- Status and Player -->' +
+        '<div class="podcast-footer">' +
+          '<div id="podcast-status" class="status-message hidden"></div>' +
+          '<div id="podcast-player" class="podcast-player hidden">' +
+            '<div class="podcast-card">' +
+              '<div class="card-content">' +
+                '<div class="player-content">' +
+                  '<h3>Your Podcast is Ready</h3>' +
+                  '<p>Listen or download your generated podcast</p>' +
+                  
+                  '<div class="audio-player">' +
+                    '<audio id="podcast-audio" controls></audio>' +
+                    '<div class="player-controls">' +
+                      UIComponents.button({ id: "play-btn", variant: "default", children: "Play" }) +
+                      UIComponents.button({ id: "download-podcast-btn", variant: "secondary", children: "Download" }) +
+                    '</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
 
     this.attachEventListeners();
   }
@@ -302,10 +298,10 @@ class PodcastUI {
       playBtn.addEventListener('click', () => {
         if (audioEl.paused) {
           audioEl.play();
-          playBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>Pause';
+          playBtn.textContent = 'Pause';
         } else {
           audioEl.pause();
-          playBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Play';
+          playBtn.textContent = 'Play';
         }
       });
     }
@@ -329,10 +325,12 @@ class PodcastUI {
         
         if (isVisible) {
           podcastSettings.classList.add('hidden');
-          toggleSettingsBtn.textContent = 'Expand';
+          toggleSettingsBtn.querySelector('span').textContent = 'Expand';
+          toggleSettingsBtn.querySelector('svg').style.transform = 'rotate(0deg)';
         } else {
           podcastSettings.classList.remove('hidden');
-          toggleSettingsBtn.textContent = 'Collapse';
+          toggleSettingsBtn.querySelector('span').textContent = 'Collapse';
+          toggleSettingsBtn.querySelector('svg').style.transform = 'rotate(180deg)';
         }
       });
     }
@@ -410,7 +408,8 @@ class PodcastUI {
     const selectedNote = noteSelect.value;
     if (!selectedNote) {
       statusEl.textContent = 'Please select a note.';
-      statusEl.className = 'status error';
+      statusEl.className = 'status-message error';
+      statusEl.classList.remove('hidden');
       return;
     }
     
@@ -420,7 +419,8 @@ class PodcastUI {
     
     if (!noteContent) {
       statusEl.textContent = 'Could not retrieve note content.';
-      statusEl.className = 'status error';
+      statusEl.className = 'status-message error';
+      statusEl.classList.remove('hidden');
       return;
     }
     
@@ -429,8 +429,9 @@ class PodcastUI {
     
     // Update UI
     statusEl.textContent = 'Generating podcast from note...';
-    statusEl.className = 'status';
-    playerEl.style.display = 'none';
+    statusEl.className = 'status-message';
+    statusEl.classList.remove('hidden');
+    playerEl.classList.add('hidden');
     
     try {
       // Get API key
@@ -470,17 +471,17 @@ class PodcastUI {
       audioEl.src = audioUrl;
       
       // Show player
-      playerEl.style.display = 'block';
-      statusEl.textContent = `Podcast "${podcastTitle}" generated successfully!`;
-      statusEl.className = 'status success';
+      playerEl.classList.remove('hidden');
+      statusEl.textContent = 'Podcast "' + podcastTitle + '" generated successfully!';
+      statusEl.className = 'status-message success';
       
       // Store for download
       this.currentPodcastBlob = wavBlob;
-      this.currentPodcastName = `${podcastTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_podcast.wav`;
+      this.currentPodcastName = podcastTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_podcast.wav';
     } catch (error) {
       console.error('Error generating podcast from note:', error);
-      statusEl.textContent = `Error: ${error.message}`;
-      statusEl.className = 'status error';
+      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.className = 'status-message error';
     }
   }
 
@@ -509,8 +510,9 @@ class PodcastUI {
     
     // Update UI
     statusEl.textContent = 'Generating podcast...';
-    statusEl.className = 'status';
-    playerEl.style.display = 'none';
+    statusEl.className = 'status-message';
+    statusEl.classList.remove('hidden');
+    playerEl.classList.add('hidden');
     
     try {
       // Generate podcast
@@ -521,17 +523,17 @@ class PodcastUI {
       audioEl.src = audioUrl;
       
       // Show player
-      playerEl.style.display = 'block';
+      playerEl.classList.remove('hidden');
       statusEl.textContent = 'Podcast generated successfully!';
-      statusEl.className = 'status success';
+      statusEl.className = 'status-message success';
       
       // Store for download
       this.currentPodcastBlob = wavBlob;
       this.currentPodcastName = 'podcast.wav';
     } catch (error) {
       console.error('Error generating podcast:', error);
-      statusEl.textContent = `Error: ${error.message}`;
-      statusEl.className = 'status error';
+      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.className = 'status-message error';
     }
   }
 

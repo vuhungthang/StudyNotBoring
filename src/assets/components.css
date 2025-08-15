@@ -1,0 +1,46 @@
+/* UI Components CSS */
+
+/* Badge component */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.badge-default {
+  background-color: var(--primary-color);
+  color: var(--primary-foreground);
+}
+
+.badge-secondary {
+  background-color: var(--secondary-color);
+  color: var(--secondary-foreground);
+}
+
+.badge-destructive {
+  background-color: var(--error-color);
+  color: var(--error-foreground);
+}
+
+.badge-outline {
+  border: 1px solid var(--border-color);
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* Card component */
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}

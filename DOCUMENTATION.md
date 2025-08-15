@@ -5,6 +5,25 @@ StudyNotBoring is a web-based application for organizing notes into notebooks wi
 
 ## Recent Changes
 
+### 7. Import/Export Feature
+
+#### Export Notes
+A new feature has been added to export all notes as a JSON file:
+- Navigate to the Notes tab
+- Click the "Export Notes" button
+- All notebooks and notes will be downloaded as a JSON file
+- The file is named "study-not-boring-notes.json"
+
+#### Import Notes
+A new feature has been added to import notes from a JSON file:
+- Navigate to the Notes tab
+- Click the "Import Notes" button
+- Select a valid JSON file containing notes
+- Notes will be merged with existing notes:
+  - New notebooks will be created
+  - Existing notebooks will have new notes added
+  - Duplicate notes (based on ID) will be skipped
+
 ### 6. Game Theme Implementation
 
 #### Modern Game-Inspired UI
@@ -33,6 +52,7 @@ A new game-themed interface has been implemented to provide a more engaging user
    - Improved responsive design with better mobile adaptation
    - More engaging podcast section with game-inspired styling
    - Updated status messages with glowing effects
+   - Proper tab navigation with only one section visible at a time
 
 #### Theme Structure
 The game theme is implemented through:

@@ -1,100 +1,64 @@
-# StudyNotBoring - Game Edition
+# StudyNotBoring - Professional Edition
 
-A web-based application for organizing notes into notebooks with AI-powered features, now with a game-inspired theme!
+A professional note-taking application with AI-powered features for enhanced productivity.
 
 ## Features
 
-- **Notebooks**: Organize your notes into custom notebooks
-- **AI-Powered Note Generation**: Create notes automatically on any topic
-- **Infographic Creation**: Transform your notes into visual infographics
-- **Text-to-Speech**: Listen to your notes being read aloud
-- **Podcast Generation**: Convert your notes into engaging podcast conversations
-- **API Integration**: Works with OpenRouter and Gemini APIs
-- **Game-Themed UI**: Modern, engaging interface with a game-inspired design
+- **Organized Notebooks**: Create and manage notebooks for different subjects or projects
+- **AI-Powered Notes**: Generate notes automatically using advanced AI models
+- **Audio Learning**: Convert your notes to speech for on-the-go learning
+- **Infographic Creation**: Transform text-based notes into visual infographics
+- **Export/Import**: Easily backup and transfer your notes
 
-## Getting Started
+## Professional Pages
 
-1. Clone this repository
+1. **Home Page**: Landing page with feature highlights and call-to-action
+2. **Dashboard**: Main application interface with notes, notebooks, podcast, and settings
+3. **About Page**: Information about the application and its technology
+4. **Contact Page**: Contact form and company information
+
+## Technologies Used
+
+- HTML5, CSS3, JavaScript (ES6+)
+- Tailwind CSS for styling
+- Google Generative AI for text-to-speech
+- OpenRouter API for AI note generation
+- LocalStorage for data persistence
+
+## Setup
+
+1. Clone the repository
 2. Open `index.html` in your browser
-3. Set your Google Generative AI API key in the settings
-4. Start taking notes!
-
-## API Key Setup
-
-To use the text-to-speech functionality, you'll need to set up a Google Generative AI API key:
-
-1. Go to [Google AI Studio](https://aistudio.google.com/)
-2. Create a new API key
-3. Copy the API key
-4. In the StudyNotBoring app, go to Settings and paste your API key in the "Gemini API Key" field
+3. Configure API keys in the Settings section:
+   - OpenRouter API key for AI features
+   - Gemini API key for text-to-speech
 
 ## Usage
 
-### Creating Notebooks
-1. Go to the Notebooks tab
-2. Enter a name for your new notebook
-3. Click "Create Notebook"
+1. Create notebooks to organize your notes
+2. Add notes manually or generate them with AI prompts
+3. Listen to your notes as podcasts
+4. Create infographics from your content
+5. Export your notes for backup or sharing
 
-### Adding Notes
-1. Go to the Notebooks tab
-2. Find the notebook you want to add a note to
-3. Enter a title and content for your note in the form below the notebook name
-4. Click "Add Note"
+## API Keys
 
-### Generating AI Notes
-1. Go to the Notebooks tab
-2. Find the notebook you want to add an AI-generated note to
-3. Enter a topic or question in the prompt field in the AI form below the notebook name
-4. Click "Generate Note"
+To use the full functionality of the app, you'll need to configure API keys:
 
-### Creating Infographics
-1. In the Notes tab, find the note you want to visualize
-2. Click "Create Infographic" on that note
-3. The infographic will open in a new window
+1. **OpenRouter API Key**:
+   - Sign up at [OpenRouter](https://openrouter.ai/)
+   - Get your API key from the dashboard
+   - Enter it in Settings > API Configuration
 
-### Listening to Notes
-1. In the Notes tab, find the note you want to hear
-2. Click "Listen" on that note
-3. The note will be read aloud using the new Gemini 2.5 Flash TTS model
+2. **Gemini API Key**:
+   - Sign up at [Google AI Studio](https://aistudio.google.com/)
+   - Create an API key
+   - Enter it in Settings > API Configuration
 
-### Downloading Audio Files
-1. In the Notes tab, find the note you want to download as audio
-2. Click "Download Audio" on that note
-3. The note will be converted to speech and downloaded as a WAV file
-4. You'll need to set your Gemini API key in Settings for this feature to work
+## Contributing
 
-### Creating Podcasts
-1. Go to the Podcast tab
-2. To create a podcast from a note:
-   - Select a note from the dropdown
-   - Enter a podcast title (optional)
-   - Click "Generate Podcast from Note"
-3. To create a podcast manually:
-   - Enter speaker names and select voices
-   - Write a conversation in the text area
-   - Click "Generate Podcast"
-4. Listen to your podcast using the player
-5. Download your podcast as a WAV file
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Game Theme
+## License
 
-This version features a new game-inspired theme with:
-
-- Dark blue background with subtle patterns
-- Neon green primary color for a high-tech gaming feel
-- Glowing animations and hover effects
-- Card-based design with depth and shadows
-- Modern, clean typography with uppercase headings
-- Interactive elements with smooth transitions
-
-## Technical Details
-
-- All data is stored locally in your browser's localStorage
-- No server required - works completely offline after initial setup
-- Built with vanilla JavaScript, HTML, and CSS
-- Uses Tailwind CSS for styling with a custom color palette
-- UI components are built with accessibility in mind
-
-## Documentation
-
-See [DOCUMENTATION.md](DOCUMENTATION.md) for detailed information about the implementation and recent changes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
