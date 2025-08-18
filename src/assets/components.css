@@ -44,3 +44,38 @@
 .card:hover {
   box-shadow: var(--shadow-lg);
 }
+
+/* Empty state improvements */
+.no-notes {
+  text-align: center;
+  padding: 2rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+}
+
+.no-notes h3 {
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.no-notes p {
+  color: var(--muted-foreground);
+  margin-bottom: 1.5rem;
+}
+
+/* Button improvements */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #333;
+}

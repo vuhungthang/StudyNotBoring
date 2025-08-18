@@ -281,10 +281,12 @@ function renderNotebooks() {
     const totalNotebooks = notebooksArray.length;
     const totalNotes = notebooksArray.reduce((sum, nb) => sum + nb.noteCount, 0);
     // Only show stats if there are notebooks or notes
-    if (totalNotebooks > 0 || totalNotes > 0) {
-        statsElement.textContent = `${totalNotebooks} notebook${totalNotebooks !== 1 ? 's' : ''}, ${totalNotes} note${totalNotes !== 1 ? 's' : ''}`;
-    } else {
-        statsElement.textContent = '';
+    if (statsElement) {
+        if (totalNotebooks > 0 || totalNotes > 0) {
+            statsElement.textContent = '';
+        } else {
+            statsElement.textContent = '';
+        }
     }
     
     // Render notebooks
@@ -316,7 +318,7 @@ function renderNotebooks() {
             const latestNoteDate = new Date(Math.max(...notes.map(note => new Date(note.timestamp))));
             description = `Contains ${noteCount} note${noteCount !== 1 ? 's' : ''}. Last modified: ${latestNoteDate.toLocaleDateString()}`;
         } else {
-            description = 'No notes yet. Add your first note to get started.';
+            description = 'This notebook is empty. Add your first note to get started!';
         }
         
         const notebookElement = document.createElement('div');
