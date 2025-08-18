@@ -81,6 +81,44 @@ class PodcastUI {
     // Main template
     const template = `
       <div class="podcast-studio">
+        <style>
+          .rotated {
+            transform: rotate(180deg);
+            transition: transform 0.3s ease;
+          }
+          
+          .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+          }
+          
+          .settings-header h2 {
+            margin: 0;
+          }
+          
+          .toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+          }
+          
+          .toggle-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+          }
+          
+          .toggle-btn svg {
+            transition: transform 0.3s ease;
+          }
+        </style>
         <div class="podcast-header">
           <h1>Podcast Studio</h1>
           <p>Transform your notes into engaging audio conversations</p>
@@ -114,7 +152,10 @@ class PodcastUI {
                 
                 <button id="generate-from-note-btn" class="btn btn-primary">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
                   </svg>
                   Generate Podcast
                 </button>
@@ -124,12 +165,14 @@ class PodcastUI {
             <!-- Settings Card -->
             <div class="podcast-card">
               <div class="card-header">
-                <h2>Settings</h2>
-                <button id="toggle-settings-btn" class="btn-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                  <span>Expand</span>
+                <button class="settings-header" id="toggle-settings-btn">
+                  <h2>Settings</h2>
+                  <div class="toggle-btn">
+                    <span id="toggle-text">Expand</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </div>
                 </button>
               </div>
               
@@ -241,22 +284,23 @@ class PodcastUI {
       }
       
       // Handle toggle settings button
-      if (target.id === 'toggle-settings-btn') {
+      if (target.id === 'toggle-settings-btn' || target.closest('#toggle-settings-btn')) {
         e.preventDefault();
         const podcastSettings = document.getElementById('podcast-settings');
-        const svg = target.querySelector('svg');
+        const svg = document.querySelector('#toggle-settings-btn svg');
+        const toggleText = document.getElementById('toggle-text');
         
-        if (podcastSettings) {
+        if (podcastSettings && svg && toggleText) {
           const isVisible = !podcastSettings.classList.contains('hidden');
           
           if (isVisible) {
             podcastSettings.classList.add('hidden');
-            target.querySelector('span').textContent = 'Expand';
-            if (svg) svg.style.transform = 'rotate(0deg)';
+            toggleText.textContent = 'Expand';
+            svg.classList.remove('rotated');
           } else {
             podcastSettings.classList.remove('hidden');
-            target.querySelector('span').textContent = 'Collapse';
-            if (svg) svg.style.transform = 'rotate(180deg)';
+            toggleText.textContent = 'Collapse';
+            svg.classList.add('rotated');
           }
         }
         return;
