@@ -30,6 +30,18 @@ class PodcastUI {
     try {
       const notebooksData = localStorage.getItem('notebooks');
       this.notebooks = notebooksData ? JSON.parse(notebooksData) : {};
+      
+      // Migrate old format notebooks to new format
+      for (const notebookName in this.notebooks) {
+        if (Array.isArray(this.notebooks[notebookName])) {
+          // Convert old format to new format
+          this.notebooks[notebookName] = {
+            notes: this.notebooks[notebookName],
+            description: ''
+          };
+        }
+      }
+      
       console.log('Loaded notebooks for podcast UI:', this.notebooks);
     } catch (error) {
       console.error('Error loading notebooks:', error);
@@ -47,24 +59,50 @@ class PodcastUI {
     return options;
   }
 
-  createNoteOptions() {
-    let options = '<option value="">Select a note</option>';
+  // Helper function to get all notes from notebooks (handling both old and new formats)
+  getAllNotes() {
+    const allNotes = [];
     
     for (const notebookName in this.notebooks) {
       if (Array.isArray(this.notebooks[notebookName])) {
+        // Old format - notebook is directly an array of notes
         this.notebooks[notebookName].forEach(note => {
-          // Properly escape the content for use in HTML attributes
-          const escapedContent = note.content
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '\n'); // Preserve newlines
-          options += `<option value="${notebookName}::${note.id}" data-content="${escapedContent}">${notebookName} - ${note.title}</option>`;
+          allNotes.push({
+            ...note,
+            notebookName
+          });
+        });
+      } else if (this.notebooks[notebookName].notes) {
+        // New format - notebook is an object with notes array
+        this.notebooks[notebookName].notes.forEach(note => {
+          allNotes.push({
+            ...note,
+            notebookName
+          });
         });
       }
     }
+    
+    return allNotes;
+  }
+
+  createNoteOptions() {
+    let options = '<option value="">Select a note</option>';
+    
+    // Get all notes using the helper function
+    const allNotes = this.getAllNotes();
+    
+    allNotes.forEach(note => {
+      // Properly escape the content for use in HTML attributes
+      const escapedContent = note.content
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '\n'); // Preserve newlines
+      options += `<option value="${note.notebookName}::${note.id}" data-content="${escapedContent}">${note.notebookName} - ${note.title}</option>`;
+    });
     
     return options;
   }

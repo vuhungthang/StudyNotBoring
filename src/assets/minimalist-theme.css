@@ -501,6 +501,13 @@ header {
   font-size: 0.875rem;
 }
 
+.notebook-card-description {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  margin: 0.5rem 0 1rem 0;
+  line-height: 1.4;
+}
+
 .notebook-card-actions {
   display: flex;
   gap: 0.5rem;

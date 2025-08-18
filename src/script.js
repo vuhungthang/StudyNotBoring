@@ -97,7 +97,19 @@ function writeString(view, offset, string) {
 }
 
 // Data structure for notebooks and notes
+// Notebooks structure: { notebookName: { notes: [], description: string } }
 let notebooks = JSON.parse(localStorage.getItem('notebooks')) || {};
+
+// Migrate old format notebooks to new format
+for (const notebookName in notebooks) {
+    if (Array.isArray(notebooks[notebookName])) {
+        // Convert old format to new format
+        notebooks[notebookName] = {
+            notes: notebooks[notebookName],
+            description: ''
+        };
+    }
+}
 let currentNotebook = null;
 
 // Default AI model
@@ -121,9 +133,12 @@ function saveSelectedModelToLocalStorage(model) {
 }
 
 // Function to create a new notebook
-function createNotebook(name) {
+function createNotebook(name, description = '') {
     if (name && !notebooks[name]) {
-        notebooks[name] = [];
+        notebooks[name] = {
+            notes: [],
+            description: description
+        };
         saveNotebooksToLocalStorage();
         renderNotebooks();
         updateNotebookSelects();
@@ -135,7 +150,7 @@ function createNotebook(name) {
 // Function to delete a notebook
 function deleteNotebook(name) {
     if (notebooks[name]) {
-        const noteCount = notebooks[name].length;
+        const noteCount = notebooks[name].notes.length;
         const message = `Are you sure you want to delete the notebook "${name}" and all its ${noteCount} note${noteCount !== 1 ? 's' : ''}? This action cannot be undone.`;
         
         if (confirm(message)) {
@@ -156,8 +171,13 @@ window.deleteNotebook = deleteNotebook;
 
 // Function to add a new note
 function addNote(notebookName, title, content) {
-    if (!notebooks[notebookName]) {
-        notebooks[notebookName] = [];
+    const isNewNotebook = !notebooks[notebookName];
+    
+    if (isNewNotebook) {
+        notebooks[notebookName] = {
+            notes: [],
+            description: ''
+        };
     }
     
     const note = {
@@ -167,9 +187,15 @@ function addNote(notebookName, title, content) {
         timestamp: new Date().toLocaleString()
     };
     
-    notebooks[notebookName].push(note);
+    notebooks[notebookName].notes.push(note);
     saveNotebooksToLocalStorage();
     renderNotebooks(); // Update notebooks view as well
+    
+    // If this was a new notebook, update the selects
+    if (isNewNotebook) {
+        updateNotebookSelects();
+    }
+    
     renderNotes();
 }
 
@@ -177,7 +203,7 @@ function addNote(notebookName, title, content) {
 function deleteNote(notebookName, noteId) {
     console.log('Deleting note:', notebookName, noteId);
     if (notebooks[notebookName]) {
-        notebooks[notebookName] = notebooks[notebookName].filter(note => note.id !== noteId);
+        notebooks[notebookName].notes = notebooks[notebookName].notes.filter(note => note.id !== noteId);
         saveNotebooksToLocalStorage();
         renderNotebooks(); // Update notebooks view as well
         renderNotes();
@@ -186,10 +212,10 @@ function deleteNote(notebookName, noteId) {
         // If notebookName is not provided or invalid, try to find the note in any notebook
         let found = false;
         for (const nbName in notebooks) {
-            const filteredNotes = notebooks[nbName].filter(note => note.id !== noteId);
-            if (filteredNotes.length !== notebooks[nbName].length) {
+            const filteredNotes = notebooks[nbName].notes.filter(note => note.id !== noteId);
+            if (filteredNotes.length !== notebooks[nbName].notes.length) {
                 // Note was found and removed
-                notebooks[nbName] = filteredNotes;
+                notebooks[nbName].notes = filteredNotes;
                 found = true;
                 break;
             }
@@ -217,12 +243,15 @@ function renderNotebooks() {
     const sortValue = document.getElementById('sort-notebooks')?.value || 'name';
     
     // Convert notebooks to array for sorting
-    let notebooksArray = Object.entries(notebooks).map(([name, notes]) => ({
-        name,
-        notes,
-        noteCount: notes.length,
-        lastModified: notes.length > 0 ? new Date(Math.max(...notes.map(note => new Date(note.timestamp)))) : new Date(0)
-    }));
+    let notebooksArray = Object.entries(notebooks).map(([name, notebookObj]) => {
+        const notes = notebookObj.notes || [];
+        return {
+            name,
+            notes,
+            noteCount: notes.length,
+            lastModified: notes.length > 0 ? new Date(Math.max(...notes.map(note => new Date(note.timestamp)))) : new Date(0)
+        };
+    });
     
     // Filter notebooks based on search
     if (searchValue) {
@@ -251,7 +280,12 @@ function renderNotebooks() {
     // Update stats
     const totalNotebooks = notebooksArray.length;
     const totalNotes = notebooksArray.reduce((sum, nb) => sum + nb.noteCount, 0);
-    statsElement.textContent = `${totalNotebooks} notebook${totalNotebooks !== 1 ? 's' : ''}, ${totalNotes} note${totalNotes !== 1 ? 's' : ''}`;
+    // Only show stats if there are notebooks or notes
+    if (totalNotebooks > 0 || totalNotes > 0) {
+        statsElement.textContent = `${totalNotebooks} notebook${totalNotebooks !== 1 ? 's' : ''}, ${totalNotes} note${totalNotes !== 1 ? 's' : ''}`;
+    } else {
+        statsElement.textContent = '';
+    }
     
     // Render notebooks
     if (notebooksArray.length === 0) {
@@ -275,12 +309,25 @@ function renderNotebooks() {
     }
     
     notebooksArray.forEach(({ name, notes, noteCount }) => {
+        // Generate description based on notebook contents
+        let description = '';
+        if (noteCount > 0) {
+            // Find the most recent note's date
+            const latestNoteDate = new Date(Math.max(...notes.map(note => new Date(note.timestamp))));
+            description = `Contains ${noteCount} note${noteCount !== 1 ? 's' : ''}. Last modified: ${latestNoteDate.toLocaleDateString()}`;
+        } else {
+            description = 'No notes yet. Add your first note to get started.';
+        }
+        
         const notebookElement = document.createElement('div');
         notebookElement.classList.add('notebook-simple-card');
         notebookElement.innerHTML = `
             <div class="notebook-card-header">
                 <h3 class="notebook-card-title">${name}</h3>
                 <span class="notebook-card-count">${noteCount}</span>
+            </div>
+            <div class="notebook-card-description">
+                ${description}
             </div>
             <div class="notebook-card-actions">
                 ${UIComponents.button({ className: "toggle-forms-btn btn btn-outline btn-sm", "data-notebook": name, children: "Add Note" })}
@@ -469,7 +516,7 @@ function updateNotebookSelects() {
 function renderNotes() {
     const notesContainer = document.getElementById('notes-container');
     const filterSelect = document.getElementById('filter-notebook-select');
-    const selectedNotebook = filterSelect.value;
+    const selectedNotebook = filterSelect ? filterSelect.value : '';
     
     notesContainer.innerHTML = '';
     
@@ -477,11 +524,21 @@ function renderNotes() {
     
     if (selectedNotebook) {
         // Display notes from selected notebook only
-        notesToDisplay = notebooks[selectedNotebook] || [];
+        // Handle both old format (array) and new format (object with notes array)
+        if (Array.isArray(notebooks[selectedNotebook])) {
+            notesToDisplay = notebooks[selectedNotebook];
+        } else {
+            notesToDisplay = notebooks[selectedNotebook]?.notes || [];
+        }
     } else {
         // Display all notes
         for (const notebookName in notebooks) {
-            notesToDisplay = notesToDisplay.concat(notebooks[notebookName]);
+            // Handle both old format (array) and new format (object with notes array)
+            if (Array.isArray(notebooks[notebookName])) {
+                notesToDisplay = notesToDisplay.concat(notebooks[notebookName]);
+            } else {
+                notesToDisplay = notesToDisplay.concat(notebooks[notebookName].notes || []);
+            }
         }
     }
     
@@ -978,7 +1035,7 @@ function setupStopButtonEventListeners() {
 // Helper function to find which notebook a note belongs to
 function getNotebookForNote(noteId) {
     for (const notebookName in notebooks) {
-        if (notebooks[notebookName] && notebooks[notebookName].some(note => note.id === noteId)) {
+        if (notebooks[notebookName].notes && notebooks[notebookName].notes.some(note => note.id === noteId)) {
             return notebookName;
         }
     }
@@ -988,7 +1045,7 @@ function getNotebookForNote(noteId) {
 // Helper function to find a note by its ID
 function findNoteById(noteId) {
     for (const notebookName in notebooks) {
-        const note = notebooks[notebookName].find(note => note.id === noteId);
+        const note = notebooks[notebookName].notes.find(note => note.id === noteId);
         if (note) {
             return note;
         }
@@ -1377,9 +1434,6 @@ function showModelStatus(model) {
 // Event listeners for note forms are now handled inline within each notebook
 // Event listeners for AI forms are now handled inline within each notebook
 
-// Event listener for filter notebook select
-document.getElementById('filter-notebook-select').addEventListener('change', renderNotes);
-
 // Function to export notes as JSON
 function exportNotes() {
     showLoading("Exporting Notes...");
@@ -1419,20 +1473,25 @@ function importNotes(event) {
             // Merge imported notebooks with existing ones
             let importedCount = 0;
             for (const notebookName in importedNotebooks) {
+                // Check if the imported notebook is in the old format (array) or new format (object)
+                const importedNotebook = Array.isArray(importedNotebooks[notebookName]) 
+                    ? { notes: importedNotebooks[notebookName], description: '' } 
+                    : importedNotebooks[notebookName];
+                
                 if (notebooks[notebookName]) {
                     // If notebook exists, merge notes
-                    const existingNoteIds = new Set(notebooks[notebookName].map(note => note.id));
-                    for (const note of importedNotebooks[notebookName]) {
+                    const existingNoteIds = new Set(notebooks[notebookName].notes.map(note => note.id));
+                    for (const note of importedNotebook.notes) {
                         // Only add notes that don't already exist
                         if (!existingNoteIds.has(note.id)) {
-                            notebooks[notebookName].push(note);
+                            notebooks[notebookName].notes.push(note);
                             importedCount++;
                         }
                     }
                 } else {
                     // If notebook doesn't exist, create it
-                    notebooks[notebookName] = importedNotebooks[notebookName];
-                    importedCount += importedNotebooks[notebookName].length;
+                    notebooks[notebookName] = importedNotebook;
+                    importedCount += importedNotebook.notes.length;
                 }
             }
             
@@ -1462,6 +1521,12 @@ window.addEventListener('DOMContentLoaded', function() {
     renderNotebooks();
     updateNotebookSelects();
     renderNotes();
+    
+    // Set up event listener for filter notebook select
+    const filterSelect = document.getElementById('filter-notebook-select');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', renderNotes);
+    }
     
     const savedOpenRouterKey = loadApiKeyFromLocalStorage();
     const savedGeminiKey = localStorage.getItem('gemini-api-key');

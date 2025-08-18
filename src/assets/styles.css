@@ -67,6 +67,7 @@ body {
     color: hsl(var(--muted-foreground));
     font-weight: 500;
     padding: 0.5rem 0;
+    margin-bottom: 1.5rem;
 }
 
 .notebook-simple-card {
