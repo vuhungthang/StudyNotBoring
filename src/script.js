@@ -109,6 +109,10 @@ let infographicGenerator = new InfographicGenerator();
 // Function to save notebooks to local storage
 function saveNotebooksToLocalStorage() {
     localStorage.setItem('notebooks', JSON.stringify(notebooks));
+    // Notify podcast UI to refresh if it exists
+    if (window.podcastUI && typeof window.podcastUI.refresh === 'function') {
+        window.podcastUI.refresh();
+    }
 }
 
 // Function to save selected model to local storage
@@ -1191,8 +1195,12 @@ function setupTabNavigation() {
                 targetContent.classList.add('active');
                 
                 // If switching to podcast tab, refresh the podcast UI
-                if (tabName === 'podcast' && typeof window.podcastUI !== 'undefined' && window.podcastUI.refresh) {
-                    window.podcastUI.refresh();
+                if (tabName === 'podcast') {
+                    // Load notebooks data directly from the main storage
+                    if (window.podcastUI) {
+                        window.podcastUI.notebooks = notebooks;
+                        window.podcastUI.render();
+                    }
                 }
             }
         }
